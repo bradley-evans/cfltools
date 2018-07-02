@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Hide Working Files
+*.csv
+*.xls
+*.xlsx
+*.txt
+
 # C extensions
 *.so
 
