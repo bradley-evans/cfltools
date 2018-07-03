@@ -6,28 +6,97 @@ from ipwhois import IPWhois
 from pycountry_convert import country_alpha2_to_country_name
 from collections import Counter
 import sys
+from decimal import Decimal
+import time
+import warnings
 
 class IpAddress:
 	def __init__(self,ip,numOccurances):
 		self.ip = ip
 		self.numOccurances = numOccurances
+		self.record = 'Whois data not initialized!'
+		self.country_code = 'Whois data not initialized!'
+		self.country_name = 'Whois data not initialized!'
+		self.asn = 'Whois data not initialized!'
+		self.asn_registry = 'Whois data not initialized!'
+		self.asn_country_code = 'Whois data not initialized!'
+		self.asn_description = 'Whois data not initialized!'
+		self.asn_date = 'Whois data not initialized!'
+	def getWhois(self):
+		with warnings.catch_warnings():
+			warnings.filterwarnings("ignore", category=UserWarning)
+			self.record = IPWhois(self.ip).lookup_rdap(depth=1)
+		self.country_code = self.record['asn_country_code']
+		if self.country_code == 'EU':
+			self.country_name = 'European Union'
+		else:
+			self.country_name = str(country_alpha2_to_country_name(self.record['asn_country_code']))
+		self.asn = self.record['asn']
+		self.asn_registry = self.record['asn_registry']
+		self.asn_description = self.record['asn_description']
+		self.asn_date = self.record['asn_date']
+		if self.asn == 'NA':
+			self.asn = 'None provided.'
+		if self.asn_registry == 'NA':
+			self.asn_registry = 'None provided.'
+		if self.asn_description == 'NA':
+			self.asn_description = 'None provided.'
+		if self.asn_date == 'NA':
+			self.asn_date = 'None provided.'
+
+
+def generateTextReport(unique_ip_address):
+	# Print our nifty new data.
+	print('Generating report.')
+	outputfile_name = 'unique_ips_' + time.strftime("%H%M%S-%W%Y") +'.txt'
+	outputfile = open(outputfile_name,'w',encoding='utf-8')
+	outputfile.write('Found ' + str(len(unique_ip_address)) + ' unique IP addresses.\n\n')
+	iterator = 1
+	logsize = len(unique_ip_address)
+	start_time = time.time()
+	for ip in unique_ip_address:
+		outputfile.write('\t' + 'IP #' + str(iterator) + ': ' + str(ip.ip) + '\n')
+		outputfile.write('\t\t| ' + 'Occurs ' + str(ip.numOccurances) + ' times.\n')
+		if ip.ip == '45.77.68.151':
+			print('Found IP of interest: ' + ip.ip)
+			print('It occurs ' + str(ip.numOccurances) + ' times.')
+			outputfile.write('\t\t*** *** IP OF INTEREST *** ***\n')
+		if (iterator-1 < 100)|(str(ip.ip) == '45.77.68.151'):
+			try:
+				ip.getWhois()
+				outputfile.write('\t\t|' + ' Country of origin: ' + ip.country_name + ' ' + ip.country_code + '\n')
+				outputfile.write('\t\t|' + ' ASN Registry Information:\n')
+				try:
+					outputfile.write('\t\t|\tRegistry: ' + ip.asn_registry + '\n')
+					outputfile.write('\t\t|\tNumber: ' + ip.asn + '\n')
+					outputfile.write('\t\t|\tDescription: ' + ip.asn_description + '\n')
+					outputfile.write('\t\t|\tAllocation date: ' + ip.asn_date + '\n')
+				except:
+					outputfile.write('\t\t|\tError retrieving ASN information for this entry.\n')
+			except:
+				print('Attempted to get IPWhois data for',str(ip.ip),'but the request failed.')
+				outputfile.write('\t\t|\tAttempted to get IPWhois data for',str(ip.ip),'but the request failed.')
+			timer = time.time() - start_time				
+		if ((iterator % 1000) == 0) | (timer > 5):
+			start_time = time.time()
+			percentDone = round(Decimal((iterator / logsize) * 100),2)
+			string = 'Currently: Generating report. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+			print(string, end='\r')
+		iterator = iterator + 1
+		
+	outputfile.close()	
 
 def main():
-	# Load the logfile. Right now, this is hardcoded
-	# to a CSV file called 'Activities.csv' located
-	# in the same folder as the script.
-	filename = 'Instagram_user_lookup_API_request_logs.csv'
-	file = open(filename, encoding='utf-8')		# Had to make this encoding change due to the
-												# presence of international characters in the
-												# dataset.
-	logfile_reader = csv.reader(file)	# csv reader class
-	unique_ip_address = []				# list to hold unique IPs found
 
-	outputfile = open('output2.txt','w',encoding='utf-8')
-	
-	# For each entry, check if the IP address already
-	# exists in our list of discovered IP addresses.
-	# If not, append the IP to our list.
+	# Load the logfile.
+	filename = sys.argv[1]
+	print(filename)
+	file = open(filename, encoding='utf-8')		
+		# ^^ Had to make this encoding change due to the
+		#    presence of international characters in the
+		#    dataset.
+	logfile_reader = csv.reader(file)	# csv reader class
+
 	print('Getting the size of the logfile....\n')
 	logsize = sum(1 for row in logfile_reader)		# Count the number of rows
 													# so we can track progress later.
@@ -47,11 +116,11 @@ def main():
 			all_ip_address.append(entry_ip_address)
 			iterator = iterator + 1
 			if iterator % 1000 == 0:
-				percentDone = ( iterator / logsize ) * 100
+				percentDone = round(Decimal((iterator / logsize ) * 100),2)
 				string = 'Currently: Scraping all IPs from file. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
 				print(string,end='\r')
 		except:
-			print('* * * Invalid entry detected on line ' + str(iterator) + '.')
+			print('\n* * * Invalid entry detected on line ' + str(iterator) + '.')
 			print('Line data: ')
 			print(entry)
 
@@ -71,72 +140,23 @@ def main():
 			unique_ip_address.append(newIpAddress)
 			iterator = iterator + 1
 			if (iterator % 1000) == 0:
-				percentDone = ( iterator / logsize ) * 100
+				percentDone = round(Decimal((iterator / logsize ) * 100),2)
 				string = 'Currently: Creating Unique IP List. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
 				print(string, end='\r')
 		except:
-			print('Error creating IP address object!')
+			print('\nError creating IP address object!')
 			print('Crash data:')
 			print('\tThe address line was:')
 			print(address)
+	print('')
 
-	# Sort the list by most frequently occuring IP.
+	# Sort the list by most frequently occuring IP. #
 	unique_ip_address.sort(key=lambda x: x.numOccurances, reverse=True)
+	
+	# Generate our report. #
+	generateTextReport(unique_ip_address)
 
-	# Print our nifty new data.
-	outputfile.write('Found ' + str(len(unique_ip_address)) + ' unique IP addresses.\n\n')
 
-	iterator = 1
-	for ip in unique_ip_address:
-		outputfile.write('\t' + 'IP #' + str(iterator) + ': ' + str(ip.ip) + '\n')
-		outputfile.write('\t\t| ' + 'Occurs ' + str(ip.numOccurances) + ' times.\n')
-		iterator = iterator + 1
-	outputfile.write('\n\nRetrieving WHOIS records.\n\n')
-		
-
-	tabs3 = '\t\t\t'
-	tabs4 = '\t\t\t\t'
-	for ip in unique_ip_address:
-		record = IPWhois(ip.ip).lookup_rdap(depth=1)
-		outputfile.write('===== Record for ' + str(ip.ip) + ' ======\n')
-		try:
-			outputfile.write('IP Address Queried:\t\t' + str(record['query']) + '\n')
-			outputfile.write('Country Code:\t\t\t' + str(record['asn_country_code']) + ' ' + str(country_alpha2_to_country_name(record['asn_country_code'])) + '\n')
-			outputfile.write('ASN:\t\t\t\t\t' + str(record['asn']) + '\n')
-			outputfile.write('ASN Registry:\t\t\t' + str(record['asn_registry']) + '\n')
-			outputfile.write('\t\t\t' + str(record['asn_description']) + '\n')
-			outputfile.write('\t\t\t' + 'Allocated ' + str(record['asn_date']) + '\n')
-			outputfile.write('National Internet\n         Registry:\t\t' + str(record['nir']) + '\n')
-		except:
-			outputfile.write('\tError collecting whois data for '+ str(ip.ip))
-		## Contact Information ##
-		outputfile.write('  ** Contact Information Discovered **\n')
-		for object in record['objects']:
-			try:
-				this_object = record['objects'][object]
-				outputfile.write(tabs3 + str(this_object['contact']['name']) + ' ' + str(object) + '\n')
-				outputfile.write(tabs3 + 'Role: ' + str(this_object['contact']['role']) + '\n' )
-				addr = this_object['contact']['address'][0]['value']
-				addr = addr.replace('\n','\n\t\t\t\t ')
-				outputfile.write(tabs4 + addr + '\n')
-				email = this_object['contact']['email']
-				if str(type(email)) == '<class \'list\'>':
-					for entry in email:
-						outputfile.write(tabs4 + entry['value'] + '\n')
-				else:
-					outputfile.write(tabs4 + 'No email provided!' + '\n')
-
-				phone = this_object['contact']['phone']
-				if str(type(phone)) == '<class \'list\'>':
-					for entry in phone:
-						outputfile.write(tabs4 + entry['value'] + '\n')
-				else:
-					outputfile.write('No phone provided!\n')
-			except:
-				outputfile.write('Error processing contact information for this IP.')
-				print('Error processing contact information for',str(ip.ip))		
-		outputfile.write('\n')
-	outputfile.close()
 
 main()
 print('Program complete.')
