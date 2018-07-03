@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 
-import csv
-from pprint import pprint
-from ipwhois import IPWhois
-from pycountry_convert import country_alpha2_to_country_name
-from collections import Counter
-import sys
-from decimal import Decimal
-import time
-import warnings
+import csv # csv reader functions
+from pprint import pprint # pretty printing to console
+from ipwhois import IPWhois # to perform whois lookups
+from pycountry_convert import country_alpha2_to_country_name # convert  country codes, e.g. US to United States
+from collections import Counter # count uniques in a file quickly, O(nlogn)
+import sys # syscalls
+from decimal import Decimal # just to show decimals with lower precision
+import time # timing stuff
+import warnings # specifically to suppress warnings from IPWhois' outdated repo
+import argparse # parsing them arguments
 
 class IpAddress:
 	def __init__(self,ip,numOccurances):
 		self.ip = ip
 		self.numOccurances = numOccurances
+		self.didWhois = False
 		self.record = 'Whois data not initialized!'
 		self.country_code = 'Whois data not initialized!'
 		self.country_name = 'Whois data not initialized!'
@@ -23,6 +25,7 @@ class IpAddress:
 		self.asn_description = 'Whois data not initialized!'
 		self.asn_date = 'Whois data not initialized!'
 	def getWhois(self):
+		self.didWhois = True
 		with warnings.catch_warnings():
 			warnings.filterwarnings("ignore", category=UserWarning)
 			self.record = IPWhois(self.ip).lookup_rdap(depth=1)
@@ -44,6 +47,81 @@ class IpAddress:
 		if self.asn_date == 'NA':
 			self.asn_date = 'None provided.'
 
+def findIpColumn(row):
+	import re
+	iterator = 0
+	for item in row:
+		aa=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",item)
+		if aa:
+			return iterator
+		iterator = iterator + 1
+
+def scrapeIPs(filename):
+	logfile_reader = csv.reader(file)	# csv reader class
+	file = open(filename, encoding='utf-8')		
+		# ^^ Had to make this encoding change due to the
+		#    presence of international characters in the
+		#    dataset.
+	# Put all of the IP addresses into one list. #
+	
+	print('Getting the size of the logfile....\n')
+	logsize = sum(1 for row in logfile_reader)		# Count the number of rows
+													# so we can track progress later.
+	
+	# Determine which row contains an IP address.
+	file.seek(1)
+	row = next(logfile_reader)
+	ip_column = findIpColumn(row)
+
+	file.seek(0)									# Return to the top of the csv.
+	next(logfile_reader)							# Skip the header row.
+	print('Processing ' + str(logsize) + ' entries.')
+
+	iterator = 0
+	all_ip_address = []
+	for entry in logfile_reader:
+		try: 
+			entry_ip_address = entry[14]
+			all_ip_address.append(entry_ip_address)
+			iterator = iterator + 1
+			if iterator % 1000 == 0:
+				percentDone = round(Decimal((iterator / logsize ) * 100),2)
+				string = 'Currently: Scraping all IPs from file. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+				print(string,end='\r')
+		except:
+			print('\n* * * Invalid entry detected on line ' + str(iterator) + '.')
+			print('Line data: ')
+			print(entry)
+	print('\n')
+	return all_ip_address
+
+def getUniqueIps(all_ip_address):
+	# Run Counter() on the complete list of IPs. #
+	iterator = 0
+	counted_ip_address = Counter(all_ip_address)
+	unique_ip_address = []
+	print('Creating list of unique IPs.')
+	logsize = len(counted_ip_address)
+	for address in counted_ip_address:
+		try:
+			this_addr = address
+			this_count = counted_ip_address[address]
+			newIpAddress = IpAddress(this_addr,this_count)
+			unique_ip_address.append(newIpAddress)
+			iterator = iterator + 1
+			if (iterator % 1000) == 0:
+				percentDone = round(Decimal((iterator / logsize ) * 100),2)
+				string = 'Currently: Creating Unique IP List. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+				print(string, end='\r')
+		except:
+			print('\nError creating IP address object!')
+			print('Crash data:')
+			print('\tThe address line was:')
+			print(address)
+	print('')
+	# Sort the list by most frequently occuring IP. #
+	unique_ip_address.sort(key=lambda x: x.numOccurances, reverse=True)
+	return unique_ip_address
 
 def generateTextReport(unique_ip_address):
 	# Print our nifty new data.
@@ -89,69 +167,13 @@ def generateTextReport(unique_ip_address):
 def main():
 
 	# Load the logfile.
-	filename = sys.argv[1]
-	print(filename)
-	file = open(filename, encoding='utf-8')		
-		# ^^ Had to make this encoding change due to the
-		#    presence of international characters in the
-		#    dataset.
-	logfile_reader = csv.reader(file)	# csv reader class
+	try:
+		filename = sys.argv[1]
+	except:
+		filename = 'data_subset.csv'
 
-	print('Getting the size of the logfile....\n')
-	logsize = sum(1 for row in logfile_reader)		# Count the number of rows
-													# so we can track progress later.
-	
-	file.seek(0)									# Return to the top of the csv.
-	next(logfile_reader)							# Skip the header row.
-	print('Processing ' + str(logsize) + ' entries.')
-
-
-
-	# Put all of the IP addresses into one list. #
-	iterator = 0
-	all_ip_address = []
-	for entry in logfile_reader:
-		try: 
-			entry_ip_address = entry[14]
-			all_ip_address.append(entry_ip_address)
-			iterator = iterator + 1
-			if iterator % 1000 == 0:
-				percentDone = round(Decimal((iterator / logsize ) * 100),2)
-				string = 'Currently: Scraping all IPs from file. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
-				print(string,end='\r')
-		except:
-			print('\n* * * Invalid entry detected on line ' + str(iterator) + '.')
-			print('Line data: ')
-			print(entry)
-
-	print('\n')
-
-	# Run Counter() on the complete list of IPs. #
-	iterator = 0
-	counted_ip_address = Counter(all_ip_address)
-	unique_ip_address = []
-	print('Creating list of unique IPs.')
-	logsize = len(counted_ip_address)
-	for address in counted_ip_address:
-		try:
-			this_addr = address
-			this_count = counted_ip_address[address]
-			newIpAddress = IpAddress(this_addr,this_count)
-			unique_ip_address.append(newIpAddress)
-			iterator = iterator + 1
-			if (iterator % 1000) == 0:
-				percentDone = round(Decimal((iterator / logsize ) * 100),2)
-				string = 'Currently: Creating Unique IP List. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
-				print(string, end='\r')
-		except:
-			print('\nError creating IP address object!')
-			print('Crash data:')
-			print('\tThe address line was:')
-			print(address)
-	print('')
-
-	# Sort the list by most frequently occuring IP. #
-	unique_ip_address.sort(key=lambda x: x.numOccurances, reverse=True)
+	all_ip_address = scrapeIPs(filename)
+	unique_ip_address = getUniqueIps(all_ip_address)
 	
 	# Generate our report. #
 	generateTextReport(unique_ip_address)
