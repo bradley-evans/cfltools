@@ -8,6 +8,7 @@ __pycache__/
 *.xls
 *.xlsx
 *.txt
+.DS_Store
 
 # C extensions
 *.so
