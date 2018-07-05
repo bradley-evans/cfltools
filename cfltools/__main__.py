@@ -1,4 +1,19 @@
 import sys
+import argparse
+
+def parseArguments(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--getuniqueips',nargs=1)
+    args = parser.parse_args()
+
+    if args.getuniqueips:
+        # Perform the following steps:
+        #   (1) Get the unique IP addresses from <filename>
+        #   (2) Export the unique IP addresses to a local text file (a report).
+        #   (3) Export the unique IP addresses to a csv file.
+        #   We include the frequency of each IP address' appearance.
+        print('Getting unique ips from filename {}.'.format(args.getuniqueips))
+        import cfltools.logparse.getuniqueip
 
 def main():
     # Expermental code #
@@ -8,4 +23,4 @@ def main():
     print('argument count :: {}'.format(len(args)))
     for arg in args:
         print('passed argument :: {}'.format(arg))
-
+    parseArguments(args)
