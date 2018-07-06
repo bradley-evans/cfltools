@@ -1,22 +1,21 @@
 import sys
 import argparse
 
+#
+
+def flag_getuniqueips (filenames):
+    import cfltools.logparse.getuniqueip as getuniqueip
+    for filename in filenames:
+        print('Getting unique ips from filename {}.'.format(filename))
+        getuniqueip.run(filename)
+
 def parseArguments(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--getuniqueips',nargs=1)
     args = parser.parse_args()
 
     if args.getuniqueips:
-        # Perform the following steps:
-        #   (1) Get the unique IP addresses from <filename>
-        #   (2) Export the unique IP addresses to a local text file (a report).
-        #   (3) Export the unique IP addresses to a csv file.
-        #   We include the frequency of each IP address' appearance.
-        import cfltools.logparse.getuniqueip as getuniqueip
-        for filename in args.getuniqueips:
-            print('Getting unique ips from filename {}.'.format(filename))
-            getuniqueip.run(filename)
-
+        flag_getuniqueips(args.getuniqueips)
 
 def main():
     # Expermental code #
@@ -27,3 +26,6 @@ def main():
     for arg in args:
         print('passed argument :: {}'.format(arg))
     parseArguments(args)
+
+if __name__ == '__main__':
+    main()
