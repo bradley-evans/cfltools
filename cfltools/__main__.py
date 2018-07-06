@@ -12,8 +12,11 @@ def parseArguments(args):
         #   (2) Export the unique IP addresses to a local text file (a report).
         #   (3) Export the unique IP addresses to a csv file.
         #   We include the frequency of each IP address' appearance.
-        print('Getting unique ips from filename {}.'.format(args.getuniqueips))
-        import cfltools.logparse.getuniqueip
+        import cfltools.logparse.getuniqueip as getuniqueip
+        for filename in args.getuniqueips:
+            print('Getting unique ips from filename {}.'.format(filename))
+            getuniqueip.run(filename)
+
 
 def main():
     # Expermental code #
