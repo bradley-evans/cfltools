@@ -154,6 +154,25 @@ def generateTextReport(unique_ip_address,filename):
     for ip in unique_ip_address:
         outputfile.write('\t' + 'IP #' + str(iterator) + ': ' + str(ip.ip) + '\n')
         outputfile.write('\t\t| ' + 'Occurs ' + str(ip.numOccurances) + ' times.\n')
+        # if ip.ip == '45.77.68.151':
+        #     print('Found IP of interest: ' + ip.ip)
+        #     print('It occurs ' + str(ip.numOccurances) + ' times.')
+        #     outputfile.write('\t\t*** *** IP OF INTEREST *** ***\n')
+        # if (iterator-1 < 100)|(str(ip.ip) == '45.77.68.151'):
+        #     try:
+        #         ip.getWhois()
+        #         outputfile.write('\t\t|' + ' Country of origin: ' + ip.country_name + ' ' + ip.country_code + '\n')
+        #         outputfile.write('\t\t|' + ' ASN Registry Information:\n')
+        #         try:
+        #             outputfile.write('\t\t|\tRegistry: ' + ip.asn_registry + '\n')
+        #             outputfile.write('\t\t|\tNumber: ' + ip.asn + '\n')
+        #             outputfile.write('\t\t|\tDescription: ' + ip.asn_description + '\n')
+        #             outputfile.write('\t\t|\tAllocation date: ' + ip.asn_date + '\n')
+        #         except:
+        #             outputfile.write('\t\t|\tError retrieving ASN information for this entry.\n')
+        #     except:
+        #         print('Attempted to get IPWhois data for',str(ip.ip),'but the request failed.')
+        #         outputfile.write('\t\t|\tAttempted to get IPWhois data for',str(ip.ip),'but the request failed.')
         timer = time.time() - start_time
         if ((iterator % 1000) == 0) | (timer > 5):
             start_time = time.time()
