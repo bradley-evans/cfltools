@@ -3,7 +3,7 @@ from appdirs import *
 import cfltools.cflt_utils as cflt_utils
 
 # Global Variables #
-APPFOLDER = user_data_dir("cfltools")
+from cfltools.settings import *
 
 @click.group()
 def cli():
@@ -16,16 +16,21 @@ def cli():
     pass
 
 @cli.command()
-def initialize():
+@click.option('--purge', is_flag=True, help='Destroy existing database and reinitalize.')
+def initialize(purge):
+    """
+    Create required database and other files.
+    """
     from pathlib import Path
     from os import makedirs
-    print("in initialize()")
     # If the application's user data directory doesn't
     # exist, create it.
     if not Path(APPFOLDER).is_dir():
         makedirs(APPFOLDER)
     # If there are missing databases, create them.
-    if not cflt_utils.checkforDB(APPFOLDER):
+    if (not cflt_utils.checkforDB(APPFOLDER)) | purge:
+        if purge:
+            print('Purge flag enabled. Replacing databases with default, empty database!')
         cflt_utils.createDatabase(APPFOLDER)
 
 @cli.command()
@@ -41,3 +46,22 @@ def getuniqueip(filename,whois):
     GetUnique.run(filename)
     if whois:
         GetWhois.run()
+
+@cli.command()
+@click.argument('incident_name')
+def createincident(incident_name):
+    """
+    Creates an incident to track logs associated with that event.
+    """
+    from os import makedirs
+    incident_dir = APPFOLDER + '/incidents/' + incident_name
+    if not cflt_utils.checkIncidentNameUnique(incident_name):
+        print("Incident identifier {} is not unique! Select a different incident name.".format(incident_name))
+    else:
+        cflt_utils.generateIncident(incident_name)
+
+@cli.command()
+@click.option('--show',is_flag=True)
+def incidents(show):
+    if show:
+        cflt_utils.listIncidents()
