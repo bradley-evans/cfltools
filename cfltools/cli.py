@@ -1,6 +1,9 @@
 import click
 from appdirs import *
-appfolder = user_data_dir("clitools")
+import cfltools.cflt_utils as cflt_utils
+
+# Global Variables #
+APPFOLDER = user_data_dir("cfltools")
 
 @click.group()
 def cli():
@@ -8,17 +11,26 @@ def cli():
     This is a set of tools for computer forensics analysts and incident responders that aids in quickly parsing and examining server logs.
     To get help with a subcommand, use cfltools subcommand --help.
     """
-    print('User Data Directory: {}'.format(user_data_dir(appfolder)))
+    # TODO: print program version here.
+    print('User Data Directory: {}'.format(user_data_dir(APPFOLDER)))
     pass
 
 @cli.command()
 def initialize():
+    from pathlib import Path
+    from os import makedirs
     print("in initialize()")
-
+    # If the application's user data directory doesn't
+    # exist, create it.
+    if not Path(APPFOLDER).is_dir():
+        makedirs(APPFOLDER)
+    # If there are missing databases, create them.
+    if not cflt_utils.checkforDB(APPFOLDER):
+        cflt_utils.createDatabase(APPFOLDER)
 
 @cli.command()
 @click.argument('filename')
-@click.option('--whois',default=10,help='Get WHOIS for top <INT> IPs.')
+@click.option('--whois',default=0,help='Get WHOIS for top <INT> IPs.')
 def getuniqueip(filename,whois):
     """
     Finds all unique IP addresses and their apperance count in FILENAME.

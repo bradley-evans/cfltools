@@ -13,4 +13,5 @@ test-getunique:
 
 test:
 	$(PIP) install -e .
-	flake8 $(current_dir) > flake8_output
+	flake8 $(current_dir) > testoutput/flake8_output
+
