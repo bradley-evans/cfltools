@@ -9,6 +9,8 @@ import sys # syscalls
 from decimal import Decimal # just to show decimals with lower precision
 import time # timing stuff
 import warnings # specifically to suppress warnings from IPWhois' outdated repo
+from ..settings import *
+
 
 class IpAddress:
     def __init__(self,ip,numOccurances):
@@ -23,6 +25,7 @@ class IpAddress:
         self.asn_country_code = 'Whois data not initialized!'
         self.asn_description = 'Whois data not initialized!'
         self.asn_date = 'Whois data not initialized!'
+
     def getWhois(self):
         self.didWhois = True
         with warnings.catch_warnings():
@@ -46,6 +49,7 @@ class IpAddress:
         if self.asn_date == 'NA':
             self.asn_date = 'None provided.'
 
+
 def findIpColumn(row):
     import re
     iterator = 0
@@ -65,16 +69,15 @@ def findIpColumn(row):
     print("Error in getuniqueip.py, findIpColumn()")
     exit(1)
 
+
 def scrapeIPs(filename):
+    # Encoding must be UTF-8 to allow for international chars
     file = open(filename, encoding='utf-8')
-        # ^^ Had to make this encoding change due to the
-        #    presence of international characters in the
-        #    dataset.
     logfile_reader = csv.reader(file)       # csv reader class
     # Put all of the IP addresses into one list. #
     print('Getting the size of the logfile....\n')
-    logsize = sum(1 for row in logfile_reader)  # Count the number of rows
-                                                                                                    # so we can track progress later.
+    # Count the number of rows so we can track progress later.
+    logsize = sum(1 for row in logfile_reader)  
     # Determine which row contains an IP address.
     file.seek(0)
     next(logfile_reader)
@@ -106,6 +109,7 @@ def scrapeIPs(filename):
     print('\n')
     return all_ip_address
 
+
 def getUniqueIps(all_ip_address):
     # Run Counter() on the complete list of IPs. #
     iterator = 0
@@ -135,6 +139,19 @@ def getUniqueIps(all_ip_address):
     print(string)
     unique_ip_address.sort(key=lambda x: x.numOccurances, reverse=True)
     return unique_ip_address
+
+
+def sendUniqueToDatabase(unique_ip_address,APPFOLDER,incident_id):
+    print('In sendUniqueToDatabase().')
+    print(APPFOLDER)
+    import sqlite3
+    conn = sqlite3.connect(APPFOLDER+'/incident.db')
+    c = conn.cursor()
+    for ip in unique_ip_address:
+        c.execute('INSERT INTO ipaddrs(ip,number_occurances,incident_id) VALUES(?,?,?)',(ip.ip, ip.numOccurances, incident_id))
+    conn.commit()
+    conn.close()
+
 
 def generateTextReport(unique_ip_address,filename):
     import os
@@ -167,11 +184,16 @@ def generateTextReport(unique_ip_address,filename):
 
     outputfile.close()
 
-##  
-def run(filename):
+
+## Function called by cli command cfltools getuniqueip
+#
+#
+def run(filename, APPFOLDER,incident_id):
     all_ip_address = scrapeIPs(filename)
     unique_ip_address = getUniqueIps(all_ip_address)
     generateTextReport(unique_ip_address,filename)
+    sendUniqueToDatabase(unique_ip_address,APPFOLDER,incident_id)
+
 
 ## Main function, allows getuniqueip to be run as a script.
 #

@@ -21,7 +21,7 @@ def getmd5hash(file):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def checkIncidentNameUnique(incident_name):
+def checkIncidentNameExists(incident_name):
     import sqlite3
     db_loc =  APPFOLDER+'/incident.db'
     conn = sqlite3.connect(db_loc)
@@ -30,9 +30,9 @@ def checkIncidentNameUnique(incident_name):
     data = c.fetchall()
     if len(data) == 0:
         conn.close()
-        return True
+        return False
     conn.close()
-    return False
+    return True
 
 def generateIncident(incident_name):
     import sqlite3
