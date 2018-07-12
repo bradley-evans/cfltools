@@ -52,7 +52,10 @@ def getuniqueip(filename, whois, incidentid):
         print('Try creating the incident with `cfltools createincident` '+
               'or listing existing incidents with `cfltools incidents --show.`')
         exit(0)
-    GetUnique.run(filename, APPFOLDER, incidentid)
+    seen = cflt_utils.checkFileWasSeen(filename)
+    GetUnique.run(filename, APPFOLDER, incidentid, seen)
+    if not seen:
+        cflt_utils.markFileAsSeen(filename, incidentid)
     if whois:
         GetWhois.run()
 

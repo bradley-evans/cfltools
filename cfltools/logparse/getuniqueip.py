@@ -188,11 +188,14 @@ def generateTextReport(unique_ip_address,filename):
 ## Function called by cli command cfltools getuniqueip
 #
 #
-def run(filename, APPFOLDER,incident_id):
+def run(filename, APPFOLDER,incident_id,seen):
     all_ip_address = scrapeIPs(filename)
     unique_ip_address = getUniqueIps(all_ip_address)
     generateTextReport(unique_ip_address,filename)
-    sendUniqueToDatabase(unique_ip_address,APPFOLDER,incident_id)
+    if not seen:
+        sendUniqueToDatabase(unique_ip_address,APPFOLDER,incident_id)
+    else:
+        print('File was already added to database. Skipping database export.')
 
 
 ## Main function, allows getuniqueip to be run as a script.

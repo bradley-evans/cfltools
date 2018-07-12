@@ -1,6 +1,7 @@
 # Global Variables #
 from cfltools.settings import *
 
+
 def listIncidents():
     import sqlite3
     db_loc = APPFOLDER+'/incident.db'
@@ -10,16 +11,46 @@ def listIncidents():
     result = c.fetchall()
     print("Incidents currently in stored in the database:")
     for incident_name in result:
-        print(incident_name)
+        print(' * ' + incident_name[0])
     conn.close()
 
+
 def getmd5hash(file):
+    # Get the MD5 hash of <file> to uniquely
+    # identify it.
     import hashlib
     hash_md5 = hashlib.md5()
     with open(file,"rb") as f:
         for chunk in iter(lambda: f.read(4096),b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+
+def markFileAsSeen(filename, incident_name):
+    import sqlite3
+    db_loc =  APPFOLDER+'/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    md5hash = getmd5hash(filename)
+    c.execute('INSERT INTO seenFiles(filename,md5,incident_id) VALUES(?,?,?)',(filename,md5hash,incident_name))
+    conn.commit()
+    conn.close()
+
+
+def checkFileWasSeen(filename):
+    import sqlite3
+    db_loc =  APPFOLDER+'/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    md5hash = getmd5hash(filename)
+    c.execute('SELECT filename FROM seenFiles WHERE md5 = ?',(md5hash,))
+    data = c.fetchall()
+    if len(data) == 0:
+        conn.close()
+        return False
+    conn.close()
+    return True
+
 
 def checkIncidentNameExists(incident_name):
     import sqlite3
@@ -33,6 +64,7 @@ def checkIncidentNameExists(incident_name):
         return False
     conn.close()
     return True
+
 
 def generateIncident(incident_name):
     import sqlite3
@@ -49,6 +81,7 @@ def generateIncident(incident_name):
     conn.commit()
     conn.close()
 
+
 def checkforDB(loc):
     from pathlib import Path
     incident_db = Path(loc+'/incident.db')
@@ -57,6 +90,7 @@ def checkforDB(loc):
         return False
     print('All required files were detected.')
     return True
+
 
 def createDatabase(loc):
     from shutil import copyfile
