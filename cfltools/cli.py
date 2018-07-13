@@ -38,7 +38,7 @@ def initialize(purge):
 
 @cli.command()
 @click.argument('filename')
-@click.option('--whois', default=0, help='Get WHOIS for top <INT> IPs.')
+@click.option('--whois', is_flag=True, help='Get WHOIS for top <INT> IPs.')
 @click.option('--incidentid', required=True)
 def getuniqueip(filename, whois, incidentid):
     """
@@ -53,11 +53,11 @@ def getuniqueip(filename, whois, incidentid):
               'or listing existing incidents with `cfltools incidents --show.`')
         exit(0)
     seen = cflt_utils.checkFileWasSeen(filename)
-    GetUnique.run(filename, APPFOLDER, incidentid, seen)
+    GetUnique.run(filename, incidentid, seen)
     if not seen:
         cflt_utils.markFileAsSeen(filename, incidentid)
     if whois:
-        GetWhois.run()
+        GetWhois.run(incidentid)
 
 
 @cli.command()

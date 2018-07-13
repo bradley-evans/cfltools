@@ -7,6 +7,10 @@ setup(
         include_package_data = True,
         install_requires=[
             'click',
+            'ipwhois',
+            'sqlite3',
+            'pycountry_convert',
+            'netaddr'
             ],
         entry_points='''
             [console_scripts]

@@ -1,5 +1,5 @@
 # Global Variables #
-from cfltools.settings import *
+from cfltools.settings import APPFOLDER
 
 
 def listIncidents():
@@ -39,7 +39,7 @@ def markFileAsSeen(filename, incident_name):
 
 def checkFileWasSeen(filename):
     import sqlite3
-    db_loc =  APPFOLDER+'/incident.db'
+    db_loc = APPFOLDER+'/incident.db'
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     md5hash = getmd5hash(filename)
@@ -54,7 +54,7 @@ def checkFileWasSeen(filename):
 
 def checkIncidentNameExists(incident_name):
     import sqlite3
-    db_loc =  APPFOLDER+'/incident.db'
+    db_loc = APPFOLDER+'/incident.db'
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     c.execute('SELECT incident_name FROM incidents WHERE incident_name = ?',(incident_name,))
