@@ -26,6 +26,26 @@ These tools make some general assumptions about the work you're doing. Among the
 
 ## Usage
 
-### `--getuniqueips`
+### Incident Identifiers and `createincident`
 
-To extract all unique IPs and frequency of appearance from a logfile, use `cfltools --getuniqueips <filename.csv>`. The file must be a `*.csv` file. 
+All log analysis tasks must have an incident identifier associated with them. To create an incident, use:
+
+`cfltools createincident [INCIDENT_NAME]`
+
+For example, to create an incident named `intrusion_10JUL`, use `cfltools createincident intrusion_10JUL`. This will create the named incident and a folder in your `%APPDIR%` that the program will use to store logs and other information associated with the incident.
+
+The program will not allow you to create an incident with the same name as another. If it detects that you have done this, it will return an error.
+
+If you forget what you have named an incident, you can call `cfltools incidents --show` to show a listing of incidents currently in the database.
+
+### Getting Unique IPs from a logfile
+
+One of the main uses of `cfltools` is to pull and catalog all uniquely-occuring IP addresses from a logfile. To use this feature, you invoke the following:
+
+`cfltools getuniqueip [FILENAME].csv --incidentid=[INCIDENT_NAME] [--whois]`
+
+An incident identifier is required and must correspond to an incident you have already named using `cfltools createincident`. The `--whois` flag is optional. If it is present, it will pull the top 100 uniquely occuring IPs and perform an automatic ipwhois query on them. It will then add that information to the database.
+
+# Acknowledgements
+
+
