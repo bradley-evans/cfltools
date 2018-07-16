@@ -8,9 +8,9 @@ setup(
         install_requires=[
             'click',
             'ipwhois',
-            'sqlite3',
             'pycountry_convert',
-            'netaddr'
+            'netaddr',
+            'appdirs'
             ],
         entry_points='''
             [console_scripts]
