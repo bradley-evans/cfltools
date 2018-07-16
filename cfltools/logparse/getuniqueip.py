@@ -24,7 +24,8 @@ class IpAddress:
 def findIpColumn(row):
     from netaddr import valid_ipv4, valid_ipv6
     iterator = 0
-    print("Dynamically determining which column contains an IP address...", end='')
+    print("Dynamically determining which column contains an IP address...",
+          end='')
     for item in row:
         if valid_ipv4(item) or valid_ipv6(item):
             print('Found!')
@@ -62,14 +63,18 @@ def scrapeIPs(filename):
             iterator = iterator + 1
             if iterator % 1000 == 0:
                 percentDone = round(Decimal((iterator / logsize) * 100), 2)
-                string = 'Currently: Scraping all IPs from file. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+                string = 'Currently: Scraping all IPs from file. Entry ' + \
+                         str(iterator) + ' of ' + str(logsize) + \
+                         ' Percent Done: ' + str(percentDone) + '%.'
                 print(string, end='\r')
         except UserWarning:
-            print('\n* * * Invalid entry detected on line ' + str(iterator) + '.')
+            print('\n* * * Invalid entry detected on line ' + str(iterator) +
+                  '.')
             iterator = iterator + 1
             print('Line data: ')
             print('Using column {} for IP address.'.format(ip_column))
-            print('Data from that column, for this entry, was {}.'.format(entry[ip_column]))
+            print('Data from that column, for this entry, '
+                  'was {}.'.format(entry[ip_column]))
             print(entry)
     print('\n')
     return all_ip_address
@@ -91,7 +96,9 @@ def getUniqueIps(all_ip_address):
             iterator = iterator + 1
             if (iterator % 1000) == 0:
                 percentDone = round(Decimal((iterator / logsize) * 100), 2)
-                string = 'Currently: Creating Unique IP List. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+                string = 'Currently: Creating Unique IP List. Entry ' + \
+                         str(iterator) + ' of ' + str(logsize) + \
+                         ' Percent Done: ' + str(percentDone) + '%.'
                 print(string, end='\r')
         except UserWarning:
             print('\nError creating IP address object!')
@@ -100,7 +107,9 @@ def getUniqueIps(all_ip_address):
             print(address)
     # Sort the list by most frequently occuring IP. #
     percentDone = 100
-    string = 'Currently: Generating report. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+    string = 'Currently: Generating report. Entry ' + str(iterator) + \
+             ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + \
+             '%.'
     print(string, '\n')
     unique_ip_address.sort(key=lambda x: x.numOccurances, reverse=True)
     return unique_ip_address
@@ -128,26 +137,33 @@ def generateTextReport(unique_ip_address, filename):
     print('=== Generating report. ===')
 
     filepath = os.path.dirname(os.path.abspath(filename))
-    outputfile_name = filepath + '/unique_ips_' + time.strftime("%Y%W%d-%H%M%S") + '.txt'
+    outputfile_name = filepath + '/unique_ips_' + \
+        time.strftime("%Y%W%d-%H%M%S") + '.txt'
     outputfile = open(outputfile_name, 'w', encoding='utf-8')
     print('Saving file to {}.'.format(outputfile_name))
-    outputfile.write('Found ' + str(len(unique_ip_address)) + ' unique IP addresses.\n\n')
-
+    outputfile.write('Found ' + str(len(unique_ip_address)) +
+                     ' unique IP addresses.\n\n')
     iterator = 0
     logsize = len(unique_ip_address)
     start_time = time.time()
     for ip in unique_ip_address:
-        outputfile.write('\t' + 'IP #' + str(iterator) + ': ' + str(ip.ip) + '\n')
-        outputfile.write('\t\t| ' + 'Occurs ' + str(ip.numOccurances) + ' times.\n')
+        outputfile.write('\t' + 'IP #' + str(iterator) + ': ' + str(ip.ip) +
+                         '\n')
+        outputfile.write('\t\t| ' + 'Occurs ' + str(ip.numOccurances) +
+                         ' times.\n')
         timer = time.time() - start_time
         if ((iterator % 1000) == 0) | (timer > 5):
             start_time = time.time()
             percentDone = round(Decimal((iterator / logsize) * 100), 2)
-            string = 'Currently: Generating report. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+            string = 'Currently: Generating report. Entry ' + str(iterator) + \
+                     ' of ' + str(logsize) + ' Percent Done: ' + \
+                     str(percentDone) + '%.'
             print(string, end='\r')
         iterator = iterator + 1
     percentDone = 100
-    string = 'Currently: Generating report. Entry ' + str(iterator) + ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + '%.'
+    string = 'Currently: Generating report. Entry ' + str(iterator) + \
+             ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + \
+             '%.'
     print(string, '\n')
 
     outputfile.close()
@@ -168,7 +184,8 @@ def main():
     try:
         filename = sys.argv[1]
     except UserWarning:
-        print('No argument for a default file found. Using [default.csv] as the parser target.')
+        print('No argument for a default file found. Using [default.csv] as '
+              'the parser target.')
         filename = 'default.csv'
 
     all_ip_address = scrapeIPs(filename)
