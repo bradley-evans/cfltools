@@ -12,9 +12,17 @@ def cli():
     This is a set of tools for computer forensics analysts and incident responders that aids in quickly parsing and examining server logs.
     To get help with a subcommand, use cfltools subcommand --help.
     """
-    # TODO: print program version here.
-    print('User Data Directory: {}'.format(user_data_dir(APPFOLDER)))
     pass
+
+
+@cli.command()
+def about():
+    # TODO: print program version here.
+    print('cfltools')
+    print('User Data Directory: {}'.format(user_data_dir(APPFOLDER)))
+    import os
+    installpath = os.path.dirname(__file__)
+    print('Install Directory: {}'.format(installpath))
 
 
 @cli.command()
@@ -27,7 +35,8 @@ def initialize(purge):
     from os import makedirs
     # If the application's user data directory doesn't
     # exist, create it.
-    if not Path(APPFOLDER).is_dir():
+    if (not Path(APPFOLDER).is_dir()):
+        print('Application folder {} not detected. Creating it...'.format(APPFOLDER))
         makedirs(APPFOLDER)
     # If there are missing databases, create them.
     if (not cflt_utils.checkforDB(APPFOLDER)) | purge:

@@ -58,6 +58,8 @@ def scrapeIPs(filename):
     all_ip_address = []
     for entry in logfile_reader:
         try:
+            # For each entry, we will append that entry's IP address to
+            # a list of all the IPs. We'll return that list later.
             entry_ip_address = entry[ip_column]
             all_ip_address.append(entry_ip_address)
             iterator = iterator + 1
@@ -89,6 +91,9 @@ def getUniqueIps(all_ip_address):
     logsize = len(counted_ip_address)
     for address in counted_ip_address:
         try:
+            # Create a new IpAddress() object for each discovered
+            # IP. Store the address and the counts for its appearance
+            # in that object.
             this_addr = address
             this_count = counted_ip_address[address]
             newIpAddress = IpAddress(this_addr, this_count)

@@ -2,6 +2,21 @@
 from cfltools.settings import APPFOLDER
 
 
+def safeprompt(question,qtype):
+    """Some custom input validation for prompts.
+    """
+    valid = False
+    answer = input(question)
+    if qtype == 'YN':
+        while not valid:
+            answer = answer.strip()
+            if (answer == 'Y') or (answer == 'y'):
+                return 'Y'
+            if (answer == 'N') or (answer == 'n'):
+                return 'N'
+            answer = input('Please enter [Y/N]: ')
+    raise InputError('Failed to validate input. {}, response was {}'.format(question,answer))
+
 def listIncidents():
     import sqlite3
     db_loc = APPFOLDER+'/incident.db'

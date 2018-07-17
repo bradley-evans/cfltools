@@ -1,6 +1,84 @@
 from cfltools.settings import APPFOLDER
 
+
+def getAsnFromUser(asn,desc):
+    """Helper function to manually enter ISP abuse data into the database.
+
+    Parameters:
+        asn: The ASN number of the ISP or entity controlling the IP address, usually
+            obtained via a WHOIS lookup.
+        desc: The description of the ASN owner, usually the name of an ISP.
+    """
+    from cfltools.cflt_utils import safeprompt
+    print('\n')
+    print('--- Manual ISP Entry ---')
+    print('ISP ASN:     '.format(asn))
+    print('Description: '.format(desc))
+    print('Please fill out the following information for this ASN from'
+          'data obtained from search.org.')
+    contact_name =          input('Enter contact name:  ')
+    online_service =        input('Online service name: ')
+    online_attn =           input('Attn:                ')
+    online_serv_address =   input('Address:             ')
+    phone =                 input('Phone:               ')
+    fax =                   input('Fax:                 ')
+    email =                 input('Email:               ')
+    notes =                 input('Notes:               ')
+    req_nda =               safeprompt('Requires NDA? [Y/N]: ','YN')
+    print('--- Entry complete.  ---')
+    return (asn, desc, contact_name, online_service, online_attn, online_serv_address,
+            phone, fax, email, notes, req_nda)
+
+
+def addAsnToDatabase(asn,desc):
+    """Helper function which adds ISP information to the database.
+
+    Parameters:
+        asn: The ASN number of the ISP or entity controlling the IP address, usually
+            obtained via a WHOIS lookup.
+        desc: The description of the ASN owner, usually the name of an ISP.
+    """
+    import sqlite3
+    db_loc = APPFOLDER+'/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    query = """
+        INSERT INTO isp(asn, description, contact_name, online_service, online_attn,
+                        online_serv_address, phone, fax, email, notes, req_nda
+                       )
+        VALUES(?,?,?,?,?,?,?,?,?,?,?)
+        """
+    c.execute(query, getAsnFromUser(asn,desc))
+    c.commit()
+    c.close()
+
+
+def checkAsnExists(asn):
+    """Verifies if an ASN number exists in the database.
+    Returns true if exists, false if not.
+    Parameters:
+        asn: String representing an ASN number.
+    """
+    import sqlite3
+    db_loc = APPFOLDER+'/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    query = """
+        SELECT asn FROM isp
+        WHERE asn = ?
+        """
+    asnlist = c.execute(query, (asn,)).fetchall()
+    if len(asnlist) > 0:
+        return True
+    return False
+
+
 def addWhoisToDatabase(iplist):
+    """Helper function which adds whois information to the database.
+
+    Parameters:
+        iplist: A list of dicts that contain relevant ipwhois data.
+    """
     import sqlite3
     db_loc = APPFOLDER+'/incident.db'
     conn = sqlite3.connect(db_loc)
@@ -11,16 +89,29 @@ def addWhoisToDatabase(iplist):
         WHERE ip=?
     """
     for ip in iplist:
-        c.execute(query,
-            (ip['country_code'],ip['country'],ip['asn'],ip['asn_description'],'Y',ip['ip'],))
+        c.execute(query, (
+            ip['country_code'],
+            ip['country'],
+            ip['asn'],
+            ip['asn_description'],
+            'Y',  # Mark the entry as having recieved a good whois query.
+            ip['ip'],
+            )
+        )
     conn.commit()
     conn.close()
 
 
 def getWhois(iplist):
+    """Function which obtains ipwhois data for a list of IP addresses.
+
+    Parameters:
+        iplist: A list of strings that contain IP addresses.
+    """
     import warnings
     from ipwhois import IPWhois
-    from pycountry_convert import country_alpha2_to_country_name as convertCountry
+    from pycountry_convert \
+        import country_alpha2_to_country_name as convertCountry
     # iplist is a list of tuples of form (ip,numoccurances).
     # Sort the list by number of occurances.
     iplist.sort(key=lambda x: x[1], reverse=True)
@@ -59,22 +150,29 @@ def getWhois(iplist):
 
 
 def getIPlist(incident_name):
-    # This will just grab a list of IPs assocaited
-    # with an incident. Output is a tuple of
-    # the ip address and its frequency of occurance
-    # in that incident.
+    """Function that retrieves all IPs associated with incident_name.
+    Returns a list of ip address strings.
+    Parameters:
+        incident_name: String representing the incident name.
+    """
     import sqlite3
     db_loc = APPFOLDER+'/incident.db'
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
-    iplist = c.execute('SELECT ip,number_occurances FROM ipaddrs WHERE incident_id = ?',(incident_name,)).fetchall()
+    iplist = c.execute("""
+        SELECT ip,number_occurances FROM ipaddrs
+        WHERE incident_id = ?
+        """, (incident_name,)).fetchall()
     # Get unique values only
     conn.close()
     return iplist
 
 
 def run(incident_name):
-    print('In logparse.getwhois.run()')
+    """Function run when the module is called from the CLI.
+    Parameters:
+        incident_name: String representing an incident name.
+    """
     print(APPFOLDER)
     iplist = getIPlist(incident_name)
     iplist_whois = getWhois(iplist)
@@ -83,7 +181,7 @@ def run(incident_name):
 
 def asScript():
     print('Running getwhois as script.')
-
+    pass
 
 if __name__ == '__main__':
     asScript()
