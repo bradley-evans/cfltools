@@ -62,41 +62,62 @@ def removeAsnFromDatabase(asn):
     conn.close()
 
 
-def getAsnFromUser(asn,desc):
+def getAsnFromUser(asn, desc):
     """Helper function to manually enter ISP abuse data into the database.
 
     Parameters:
-        asn: The ASN number of the ISP or entity controlling the IP address, usually
-            obtained via a WHOIS lookup.
+        asn: The ASN number of the ISP or entity controlling the IP address,
+            usually obtained via a WHOIS lookup.
         desc: The description of the ASN owner, usually the name of an ISP.
     """
     from cfltools.cflt_utils import safeprompt
-    print('\n')
-    print('--- Manual ISP Entry ---')
-    print('ISP ASN:     '.format(asn))
-    print('Description: '.format(desc))
-    print('Please fill out the following information for this ASN from'
-          'data obtained from search.org.')
-    contact_name =          input('Enter contact name:  ')
-    online_service =        input('Online service name: ')
-    online_attn =           input('Attn:                ')
-    online_serv_address =   input('Address:             ')
-    phone =                 input('Phone:               ')
-    fax =                   input('Fax:                 ')
-    email =                 input('Email:               ')
-    notes =                 input('Notes:               ')
-    req_nda =               safeprompt('Requires NDA? [Y/N]: ','YN')
+
+    def checkBlank(string):
+        if string == '':
+            string = 'NONE'
+        return string
+    confirmed = False
+    while not confirmed:
+        print('\n')
+        print('--- Manual ISP Entry ---')
+        print('ISP ASN:     {}'.format(asn))
+        print('Description: {}'.format(desc))
+        print('Please fill out the following information for this ASN from'
+              'data obtained from search.org. If the information is not'
+              'available, simply press ENTER to leave the line blank.')
+        contact_name = checkBlank(input('Enter contact name:  '))
+        online_service = checkBlank(input('Online service name: '))
+        online_attn = checkBlank(input('Attn:                '))
+        online_serv_address = checkBlank(input('Address:             '))
+        phone = checkBlank(input('Phone:               '))
+        fax = checkBlank(input('Fax:                 '))
+        email = checkBlank(input('Email:               '))
+        notes = checkBlank(input('Notes:               '))
+        req_nda = safeprompt('Requires NDA? [Y/N]: ','YN')
+        print('Contact name:        {}'.format(contact_name))
+        print('Online service name: {}'.format(online_service))
+        print('Attn:                {}'.format(online_attn))
+        print('Service address:     {}'.format(online_serv_address))
+        print('Phone:               {}'.format(phone))
+        print('Fax:                 {}'.format(fax))
+        print('Email:               {}'.format(email))
+        print('Notes:               {}'.format(notes))
+        print('Requires NDA:        {}'.format(req_nda))
+        req_confirm = safeprompt('Is the above information ' +
+                                 'correct? [Y/N]: ', 'YN')
+        if req_confirm == 'Y':
+            confirmed = True
     print('--- Entry complete.  ---')
-    return (asn, desc, contact_name, online_service, online_attn, online_serv_address,
-            phone, fax, email, notes, req_nda)
+    return (asn, desc, contact_name, online_service, online_attn,
+            online_serv_address, phone, fax, email, notes, req_nda)
 
 
-def addAsnToDatabase(asn,desc):
+def addAsnToDatabase(asn, desc):
     """Helper function which adds ISP information to the database.
 
     Parameters:
-        asn: The ASN number of the ISP or entity controlling the IP address, usually
-            obtained via a WHOIS lookup.
+        asn: The ASN number of the ISP or entity controlling the IP address,
+            usually obtained via a WHOIS lookup.
         desc: The description of the ASN owner, usually the name of an ISP.
     """
     import sqlite3
@@ -233,6 +254,47 @@ def getIPlist(incident_name):
     conn.close()
     return iplist
 
+
+def getMissingASNfromUser():
+    """Collect missing ASNs from user.
+    """
+    import sqlite3
+    from cfltools.cflt_utils import safeprompt
+    db_loc = APPFOLDER+'/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    query = """
+        SELECT asn, asn_description FROM ipaddrs
+        """
+    asnlist = c.execute(query).fetchall()
+    asnlist = list(set(asnlist))    # Get unique values only 
+    conn.close()
+    iterator = 1
+    numNewEntry = 0
+    from pprint import pprint
+    pprint(asnlist)
+    for entry in asnlist:
+        asn = entry[0]
+        if asn == None:
+            continue
+        if not checkAsnExists(asn):
+            numNewEntry = numNewEntry + 1
+    for entry in asnlist:
+        asn = entry[0]
+        desc = entry[1]
+        if not checkAsnExists(asn):
+            if asn == None:
+                continue
+            print('Currently reviewing new ASN entry {} '\
+                  'of {}.'.format(iterator,numNewEntry))
+            answer = safeprompt('Enter entry for {}? '\
+                                '[Y/N]: '.format(entry[1]),'YN')
+            if answer == 'Y':
+                iterator = iterator + 1
+                addAsnToDatabase(asn, desc)
+            else:
+                break
+    print('ASN entry complete.')
 
 def run(incident_name):
     """Function run when the module is called from the CLI.

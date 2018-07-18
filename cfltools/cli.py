@@ -26,7 +26,7 @@ def about():
 
 
 @cli.command()
-@click.option('--purge', is_flag=True, help='Destroy existing database and reinitalize.')
+@click.option('--purge', is_flag=True, help='Destroy existing database and reinitalize.', confirmation_prompt=True)
 def initialize(purge):
     """
     Create required database and other files.
@@ -94,3 +94,26 @@ def createincident(incident_name):
 def incidents(show):
     if show:
         cflt_utils.listIncidents()
+
+
+@cli.command()
+@click.option('--saveasn', is_flag=True)
+@click.option('--loadasn', is_flag=True)
+@click.option('--fillmissingasn', is_flag=True)
+def database(saveasn, loadasn, fillmissingasn):
+    """
+    Database IO operations
+    """
+    if saveasn:
+        import cfltools.logparse.getwhois as getwhois
+        from cfltools.cflt_utils import safeprompt
+        filename = safeprompt("Enter filename to save ASN database to: ",'csv')
+        getwhois.saveISPDBtoFile(filename)
+    if loadasn:
+        import cfltools.logparse.getwhois as getwhois
+        from cfltools.cflt_utils import safeprompt
+        filename = safeprompt("Enter filename to load ASN database from: ",'csv')
+        getwhois.loadISPDBfromFile(filename)
+    if fillmissingasn:
+        import cfltools.logparse.getwhois as getwhois
+        getwhois.getMissingASNfromUser()

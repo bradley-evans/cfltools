@@ -1,5 +1,5 @@
 # Global Variables #
-from cfltools.settings import APPFOLDER
+from cfltools.settings import APPFOLDER, INSTALLPATH
 
 
 def safeprompt(question,qtype):
@@ -8,6 +8,7 @@ def safeprompt(question,qtype):
     valid = False
     answer = input(question)
     if qtype == 'YN':
+        # Verify a yes/no question got a yes/no answer. #
         while not valid:
             answer = answer.strip()
             if (answer == 'Y') or (answer == 'y'):
@@ -15,6 +16,12 @@ def safeprompt(question,qtype):
             if (answer == 'N') or (answer == 'n'):
                 return 'N'
             answer = input('Please enter [Y/N]: ')
+    if qtype == 'csv':
+        while not valid:
+            if answer.endswith('.csv'):
+                return answer
+            print('Filename {} is not a valid .csv file.'.format(answer))
+            answer = input('Please enter a filename ending in .csv: ')
     raise InputError('Failed to validate input. {}, response was {}'.format(question,answer))
 
 
@@ -113,6 +120,6 @@ def createDatabase(loc):
     from os import getcwd
     print("In cfl_utils.createDatabase(). loc={}".format(loc))
     print("Script current working directory is {}".format(getcwd()))
-    incident_db_default = getcwd() + '/cfltools/default/default.db'
+    incident_db_default = INSTALLPATH + '/default/default.db'
     incident_db_target = loc+'/incident.db'
     copyfile(incident_db_default,incident_db_target)
