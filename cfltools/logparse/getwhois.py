@@ -1,4 +1,65 @@
-from cfltools.settings import APPFOLDER
+from cfltools.settings import APPFOLDER, INSTALLPATH
+
+
+def loadISPDBfromFile(filename):
+    """Loads ASN information for known ISPs into the ISP table of the database.
+    Requires that the csv file used for data import be standardized.
+    """
+    import csv
+    import sqlite3
+    db_loc = APPFOLDER + '/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    query = """
+        INSERT INTO isp
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        """
+    with open(filename,'r') as input:
+        csv_in = csv.reader(input)
+        for data in csv_in:
+            asn = data[0]
+            if not checkAsnExists(asn):
+                c.execute(query,tuple(data))
+    conn.commit()
+    conn.close()
+
+
+def saveISPDBtoFile(filename):
+    """Saves the current contents of the ASN database to the install directory.
+    """
+    import csv
+    import sqlite3
+    db_loc = APPFOLDER + '/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    query = """
+        SELECT * FROM isp
+        """
+    data = c.execute(query).fetchall()
+    with open(filename,'w') as out:
+        csv_out = csv.writer(out)
+        for row in data:
+            csv_out.writerow(row)
+    conn.close()
+
+
+def removeAsnFromDatabase(asn):
+    """Helper function which removes ISP information from database.
+
+    Parameters:
+        asn: ASN to be removed.
+    """
+    import sqlite3
+    db_loc = APPFOLDER+'/incident.db'
+    conn = sqlite3.connect(db_loc)
+    c = conn.cursor()
+    query = """
+        DELETE FROM isp
+        WHERE asn=?
+        """
+    c.execute(query,(asn,))
+    conn.commit()
+    conn.close()
 
 
 def getAsnFromUser(asn,desc):
@@ -48,9 +109,13 @@ def addAsnToDatabase(asn,desc):
                        )
         VALUES(?,?,?,?,?,?,?,?,?,?,?)
         """
-    c.execute(query, getAsnFromUser(asn,desc))
-    c.commit()
-    c.close()
+    try:
+        c.execute(query, getAsnFromUser(asn,desc))
+    except UserWarning:
+        # Entry is not unique!
+        pass
+    conn.commit()
+    conn.close()
 
 
 def checkAsnExists(asn):
@@ -68,6 +133,7 @@ def checkAsnExists(asn):
         WHERE asn = ?
         """
     asnlist = c.execute(query, (asn,)).fetchall()
+    conn.close()
     if len(asnlist) > 0:
         return True
     return False

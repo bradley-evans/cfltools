@@ -37,11 +37,13 @@ def test_getAsnFromUser():
     assert v10 == 'N'
 
 
-def test_checkAsnExists(asn):
+def test_checkAsnExists():
+    import cfltools.logparse.getwhois as getwhois
     asn = '9999999'
-    assert checkAsnExists(asn) == False
+    assert getwhois.checkAsnExists(asn) == False
 
-def test_addAsnToDatabase():
+
+def test_ASNDatabaseFileIO():
     import cfltools.logparse.getwhois as getwhois
     from io import StringIO
     import sys
@@ -50,12 +52,18 @@ def test_addAsnToDatabase():
     sys.stdin = StringIO('John Doe\n'
             'Internet, Inc.\n'
             'Internet, Inc. Legal Department\n'
+            '123 Anystreet Ct., Anytown, CA 92912, United States\n'
             '(123)456-7890\n'
             '(123)456-7891\n'
             'abuse@internetinc.com\n'
             'This is a test entry.\n'
             'n\n')
     getwhois.addAsnToDatabase(asn,desc)
-    assert checkAsnExists(asn) == True
-
-
+    assert getwhois.checkAsnExists(asn) == True
+    getwhois.saveISPDBtoFile('testfile_asndatabasefileio.csv')
+    getwhois.removeAsnFromDatabase(asn)
+    assert getwhois.checkAsnExists(asn) == False
+    getwhois.loadISPDBfromFile('testfile_asndatabasefileio.csv')
+    assert getwhois.checkAsnExists(asn) == True
+    getwhois.removeAsnFromDatabase(asn)
+    assert getwhois.checkAsnExists(asn) == False

@@ -23,6 +23,7 @@ The program will also be able to import that information into a central sqlite (
 
 These tools make some general assumptions about the work you're doing. Among the most important are:
 * That logfiles you are using are *completely static*. The program detects if it has seen a logfile before by taking a hash of the file. Generally, I'm presuming that the logs you are feeding into this program need to be treated as evidence, so will remain unchanged (filename, contents, and so on) from the start of your analysis until the end. If you need to rename a file for archival purposes (I've noticed that some data dumps are fairly standardized and some use the same filenames repeatedly), you should rename the file before importing it with this tool.
+* That data is generally using an IP address as your common identifying marker. This is imperfect, but it's what we have for right now.
 
 ## Usage
 
@@ -48,4 +49,5 @@ An incident identifier is required and must correspond to an incident you have a
 
 # Acknowledgements
 
-
+cyber@ucr, the UCR cybersecurity student's organization
+The Bourns College of Engineering at the University of California, Riverside

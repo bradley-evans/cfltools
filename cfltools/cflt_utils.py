@@ -17,6 +17,7 @@ def safeprompt(question,qtype):
             answer = input('Please enter [Y/N]: ')
     raise InputError('Failed to validate input. {}, response was {}'.format(question,answer))
 
+
 def listIncidents():
     import sqlite3
     db_loc = APPFOLDER+'/incident.db'
