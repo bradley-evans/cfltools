@@ -49,7 +49,7 @@ def initialize(purge):
 @click.argument('filename')
 @click.option('--whois', is_flag=True, help='Get WHOIS for top <INT> IPs.')
 @click.option('--incidentid', required=True)
-def getuniqueip(filename, whois, incidentid):
+def ip(filename, whois, incidentid):
     """
     Finds all unique IP addresses and their apperance count in FILENAME.
     The file given to this tool must be a *.csv file that contains at least one column of IP addresses.

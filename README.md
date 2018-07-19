@@ -43,7 +43,7 @@ If you forget what you have named an incident, you can call `cfltools incidents 
 
 One of the main uses of `cfltools` is to pull and catalog all uniquely-occuring IP addresses from a logfile. To use this feature, you invoke the following:
 
-`cfltools getuniqueip [FILENAME].csv --incidentid=[INCIDENT_NAME] [--whois]`
+`cfltools ip [FILENAME].csv --incidentid=[INCIDENT_NAME] [--whois]`
 
 An incident identifier is required and must correspond to an incident you have already named using `cfltools createincident`. The `--whois` flag is optional. If it is present, it will pull the top 100 uniquely occuring IPs and perform an automatic ipwhois query on them. It will then add that information to the database.
 
