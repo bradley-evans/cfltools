@@ -81,6 +81,6 @@ It is often necessary for an analyst to go to an ISP for more information about 
 
 # Acknowledgements
 
-cyber@ucr, the UCR cybersecurity student's organization
+cyber@ucr, the UCR cybersecurity students organization (@ucrcyber)
 
 The Bourns College of Engineering at the University of California, Riverside
