@@ -265,6 +265,7 @@ def getMissingASNfromUser():
     c = conn.cursor()
     query = """
         SELECT asn, asn_description FROM ipaddrs
+        WHERE whois_done = 'Y'
         """
     asnlist = c.execute(query).fetchall()
     asnlist = list(set(asnlist))    # Get unique values only 

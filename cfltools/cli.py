@@ -117,3 +117,16 @@ def database(saveasn, loadasn, fillmissingasn):
     if fillmissingasn:
         import cfltools.logparse.getwhois as getwhois
         getwhois.getMissingASNfromUser()
+
+
+@cli.command()
+@click.argument('incident_id')
+def report(incident_id):
+    import cfltools.reports.report as report
+    from cfltools.cflt_utils import checkIncidentNameExists
+    if checkIncidentNameExists(incident_id):
+        report.reportToCLI(incident_id)
+    else:
+        print('Incident {} does not exist. You can '
+              'show a list of incidents with the command '
+              'cfltools incidents --show'.format(incident_id))
