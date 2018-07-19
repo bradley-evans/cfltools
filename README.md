@@ -47,7 +47,40 @@ One of the main uses of `cfltools` is to pull and catalog all uniquely-occuring 
 
 An incident identifier is required and must correspond to an incident you have already named using `cfltools createincident`. The `--whois` flag is optional. If it is present, it will pull the top 100 uniquely occuring IPs and perform an automatic ipwhois query on them. It will then add that information to the database.
 
+# Example Workflow
+
+This workflow assumes a "first run" -- program was just installed and no other work has been done.
+
+### Initializing the Database
+
+Perform `cfltools initialize` to create the initial incident database.
+
+### Create an incident
+
+Information in `cfltools` is organized into "incidents." In the database, each datapoint is assoicated with a unique incident identifier that allows you to associate information with that incident and corelate it across others. Before we import a logfile, we need to identify what incident that logfile is associated with. Since we just initialized the database, that means we will need to create a new incident identifier. To do that, use:
+
+`cfltools createincident [INCIDENTID]`
+
+If you ever forget your incident names, you can use `cfltools incident --show` to list incidents.
+
+### Add a logfile to the incident.
+
+You have a logfile that contains some IP addresses. To perform simple IP analysis on this log, we can use the IP analysis tools in `cfltools`. Invoke:
+
+`cfltools ip [FILENAME] --incidentid [INCIDENTID] --whois`
+
+The `--whois` flag tells `cfltools` to perform whois queries on the IPs associated with that incident. So that we don't make ISPs angry, we examine only the top 100 (or so, this will become a user-configurable option later) entries. 
+
+This tool will scrape the IPs from the database, identify which of them are unique, and do whois queries on them. It will remember what files it has already seen. It will then store counts for IP address occurances and tag them with an event ID.
+
+### Identify Internet Service Providers for follow-up
+
+It is often necessary for an analyst to go to an ISP for more information about an IP address that occurs repeatedly in their logs. The `ip` tools will give you a general description of what provider is associated with an IP, but it is generally left to the analyst to go out and find abuse contact information for that organization. We can't automate that away (no central database for that information exists), but we can help reduce the number of times it is necessary to do so.
+
+`cfltools` stores a database of ISPs that have been seen, by thier Autonomous System Number (ASN). You can use `cfltools database --fillmissingasn` to go through your list of unique IP addresses and manually fill in abuse contact information associated with each IP's ISP. This way, you only have to do the lookup once. To save your ASN database, use `cfltools database --saveasn`. If you or your colleagues have a shared list of ASNs, you can load those in using `cfltools database --loadasn`. Note that loading will ignore any ASNs that already exist in the database.
+
 # Acknowledgements
 
 cyber@ucr, the UCR cybersecurity student's organization
+
 The Bourns College of Engineering at the University of California, Riverside
