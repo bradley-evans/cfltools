@@ -206,17 +206,7 @@ def run(filename, incident_id, seen):
 
 
 def main():
-    # Load the logfile.
-    try:
-        filename = sys.argv[1]
-    except UserWarning:
-        print('No argument for a default file found. Using [default.csv] as '
-              'the parser target.')
-        filename = 'default.csv'
-    all_ip_address = scrapeIPs(filename)
-    unique_ip_address = getUniqueIps(all_ip_address)
-    # Generate our report. #
-    generateTextReport(unique_ip_address, filename)
+    pass
 
 
 if __name__ == "__main__":
