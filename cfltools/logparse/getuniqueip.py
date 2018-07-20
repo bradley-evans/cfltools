@@ -13,19 +13,11 @@ class IpAddress:
     def __init__(self, ip, numOccurances):
         self.ip = ip
         self.numOccurances = numOccurances
-        self.country_code = 'Whois data not initialized!'
-        self.country_name = 'Whois data not initialized!'
-        self.asn = 'Whois data not initialized!'
-        self.asn_registry = 'Whois data not initialized!'
-        self.asn_country_code = 'Whois data not initialized!'
-        self.asn_description = 'Whois data not initialized!'
 
 
 def findIpColumn(row):
     import re
     iterator = 0
-    print("Dynamically determining which column contains an IP address...",
-          end='')
     # What's below are two regular expressions that pattern match to IP
     # addresses. I tried using a library for this (netaddr) but that
     # started matching to long integers that happened to have the right

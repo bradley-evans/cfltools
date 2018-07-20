@@ -22,7 +22,8 @@ def test_getAsnFromUser():
             '(123)456-7891\n'
             'abuse@internetinc.com\n'
             'This is a test entry.\n'
-            'n\n')
+            'n\n'
+            'y\n')
     v0,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10 = getwhois.getAsnFromUser(asn,desc)
     assert v0 == asn
     assert v1 == desc
@@ -57,7 +58,8 @@ def test_ASNDatabaseFileIO():
             '(123)456-7891\n'
             'abuse@internetinc.com\n'
             'This is a test entry.\n'
-            'n\n')
+            'n\n'
+            'y\n')
     getwhois.addAsnToDatabase(asn,desc)
     assert getwhois.checkAsnExists(asn) == True
     getwhois.saveISPDBtoFile('testfile_asndatabasefileio.csv')
