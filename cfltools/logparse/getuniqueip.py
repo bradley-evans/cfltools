@@ -196,49 +196,9 @@ def sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id):
     conn.close()
 
 
-def generateTextReport(unique_ip_address, filename):
-    import os
-
-    # Print our nifty new data.
-    print('=== Generating report. ===')
-
-    filepath = os.path.dirname(os.path.abspath(filename))
-    outputfile_name = filepath + '/unique_ips_' + \
-        time.strftime("%Y%W%d-%H%M%S") + '.txt'
-    outputfile = open(outputfile_name, 'w', encoding='utf-8')
-    print('Saving file to {}.'.format(outputfile_name))
-    outputfile.write('Found ' + str(len(unique_ip_address)) +
-                     ' unique IP addresses.\n\n')
-    iterator = 0
-    logsize = len(unique_ip_address)
-    start_time = time.time()
-    for ip in unique_ip_address:
-        outputfile.write('\t' + 'IP #' + str(iterator) + ': ' + str(ip.ip) +
-                         '\n')
-        outputfile.write('\t\t| ' + 'Occurs ' + str(ip.numOccurances) +
-                         ' times.\n')
-        timer = time.time() - start_time
-        if ((iterator % 1000) == 0) | (timer > 5):
-            start_time = time.time()
-            percentDone = round(Decimal((iterator / logsize) * 100), 2)
-            string = 'Currently: Generating report. Entry ' + str(iterator) + \
-                     ' of ' + str(logsize) + ' Percent Done: ' + \
-                     str(percentDone) + '%.'
-            print(string, end='\r')
-        iterator = iterator + 1
-    percentDone = 100
-    string = 'Currently: Generating report. Entry ' + str(iterator) + \
-             ' of ' + str(logsize) + ' Percent Done: ' + str(percentDone) + \
-             '%.'
-    print(string, '\n')
-
-    outputfile.close()
-
-
 def run(filename, incident_id, seen):
     all_ip_address = scrapeIPs(filename)
     unique_ip_address = getUniqueIps(all_ip_address)
-    generateTextReport(unique_ip_address, filename)
     if not seen:
         sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id)
     else:
@@ -253,7 +213,6 @@ def main():
         print('No argument for a default file found. Using [default.csv] as '
               'the parser target.')
         filename = 'default.csv'
-
     all_ip_address = scrapeIPs(filename)
     unique_ip_address = getUniqueIps(all_ip_address)
     # Generate our report. #
