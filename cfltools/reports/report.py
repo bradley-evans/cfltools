@@ -52,22 +52,33 @@ class IpAddressReport():
 class IpAddressReport_CLI(IpAddressReport):
 
     def printCLI(self):
-        print('=== IP address {} ==='.format(self.ip))
-        if len(self.occurances) > 1:
-            print('This IP appears in multiple incidents!')
-        for incident in self.occurances:
-            print('Occurs {} times in incident {}.'.format(incident[0],incident[1]))
-        if self.isWhoisDone:
-            from pprint import pprint
-            # TODO: don't print this so lazily
-            pprint(self.whois)
-        else:
-            print('Whois was not performed on this entry.')
-            pass
-        print('\n')
+        string = self.printTextReport()
+        print(string)
 
-    def printFile(filename):
-        pass
+    def printTextReport(self):
+        """ Generates a string for this IP so it can be printed
+        to a file or elsewhere.
+        """
+        string = '\n=== IP address {} ===\n'.format(self.ip)
+        if len(self.occurances) > 1:
+            string = string + 'This IP appears in multiple incidents!\n'
+        for incident in self.occurances:
+            string = string +\
+                'Occurs {} times in incident {}.\n'.format(incident[0],
+                                                           incident[1])
+        if self.isWhoisDone:
+            string += 'ASN:     {}\n'.format(self.whois['asn'])
+            string += 'Desc:    {}\n'.format(self.whois['description'])
+            string += 'Email:   {}\n'.format(self.whois['email'])
+            string += 'Phone:   {}\n'.format(self.whois['phone'])
+            string += 'Fax:     {}\n'.format(self.whois['fax'])
+            string += 'Notes:   {}\n'.format(self.whois['notes'])
+            string += 'Attn:    {}\n'.format(self.whois['online_attn'])
+            string += 'Address: {}\n'.format(self.whois['online_serv_address'])
+            string += 'Service: {}\n'.format(self.whois['online_service'])
+            if (self.whois['req_nda'] == 'Y'):
+                string += 'This service provider requires an NDA.\n'
+        return string
 
 
 def reportUniqueIP(incidentid):
