@@ -1,0 +1,14 @@
+language: python
+sudo: false
+notifications:
+    email: false
+env:
+    global:
+        - TZ=UTC
+python:
+    - 3.6
+install: pip install tox-travis
+script: tox
+ 
+
+
