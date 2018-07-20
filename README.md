@@ -1,6 +1,6 @@
 # cfltools: Computer Forensic Laboratory Tools
 
-Master Branch Status: ![img](https://travis-ci.com/bradley-evans/cfltools.svg?branch=master)
+![img](https://travis-ci.com/bradley-evans/cfltools.svg?branch=master)
 
 A logfile analysis tool for cyber forensics investigators.
 
