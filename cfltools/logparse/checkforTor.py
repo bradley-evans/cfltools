@@ -20,7 +20,7 @@ def checkExonoraTor(ip,posix_time):
     response = requests.get(url).content
     if str(response).find('Result is positive') > 0:
         return True
-    else if str(response).find('Result is negative') > 0:
+    elif str(response).find('Result is negative') > 0:
         return False
     print('Could not determine if {} is an exit node.'.format(ip))
     raise UserWarning
