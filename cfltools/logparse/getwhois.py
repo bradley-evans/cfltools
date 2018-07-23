@@ -12,13 +12,15 @@ def loadISPDBfromFile(filename):
     c = conn.cursor()
     query = """
         INSERT INTO isp
-        VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """
     with open(filename,'r') as input:
         csv_in = csv.reader(input)
         for data in csv_in:
             asn = data[0]
             if not checkAsnExists(asn):
+                from pprint import pprint
+                pprint(data)
                 c.execute(query,tuple(data))
     conn.commit()
     conn.close()

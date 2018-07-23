@@ -10,7 +10,8 @@ setup(
             'ipwhois',
             'pycountry_convert',
             'netaddr',
-            'appdirs'
+            'appdirs',
+            'timestring'
             ],
         entry_points='''
             [console_scripts]

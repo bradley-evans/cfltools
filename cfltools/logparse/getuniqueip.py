@@ -13,6 +13,32 @@ class IpAddress:
     def __init__(self, ip, numOccurances):
         self.ip = ip
         self.numOccurances = numOccurances
+        self.startTime = float('inf')
+        self.endTime = float('-inf')
+
+
+def findTimeColumn(row):
+    """Dynamically determine which column of a log file contains dates.
+
+    Parameters:
+        row: A row of a logfile
+    Returns:
+        iterator: An integer defining the row that contains a valid date string.
+    """
+    from timestring import Date
+    iterator = 0
+    for item in row:
+        if item.isdigit():
+            # This is a hacky way of avoiding integers from
+            # being detected as date/time information
+            iterator += 1
+            continue
+        try:
+            this = Date(item)
+            return iterator
+        except:
+            iterator += 1
+    return None
 
 
 def findIpColumn(row):
@@ -90,6 +116,8 @@ def findIpColumn(row):
 
 
 def scrapeIPs(filename):
+    """Scrapes all IP addresses from a logfile.
+    """
     # Encoding must be UTF-8 to allow for international chars
     file = open(filename, encoding='utf-8')
     logfile_reader = csv.reader(file)       # csv reader class
@@ -102,7 +130,7 @@ def scrapeIPs(filename):
     next(logfile_reader)
     row = next(logfile_reader)
     ip_column = findIpColumn(row)
-
+    time_column = findTimeColumn(row)
     file.seek(0)  # Return to the top of the csv.
     next(logfile_reader)  # Skip the header row.
     print('Processing ' + str(logsize) + ' entries.')
@@ -174,23 +202,63 @@ def getUniqueIps(all_ip_address):
 
 
 def sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id):
-    print('In sendUniqueToDatabase().')
     print(APPFOLDER)
     import sqlite3
     conn = sqlite3.connect(APPFOLDER+'/incident.db')
     c = conn.cursor()
     for ip in unique_ip_address:
         c.execute("""
-            INSERT INTO ipaddrs(ip,number_occurances,incident_id)
-            VALUES(?,?,?)
-            """, (ip.ip, ip.numOccurances, incident_id))
+            INSERT INTO ipaddrs(ip,number_occurances,incident_id,start_time,end_time)
+            VALUES(?,?,?,?,?)
+            """, (ip.ip, ip.numOccurances, incident_id, ip.startTime, ip.endTime))
     conn.commit()
     conn.close()
+
+
+def getTimerange(filename, unique_ip_address):
+    """Naive method to determine the time range during which an IP
+    address appears in a logfile.
+
+    This is sort of hacky. I'm using timestring to process fairly arbitrary
+    text input strings for dates from logs, converting those into POSIX
+    dates and times, and then comparing that to a simple integer stored
+    in the object to establish our range.
+
+    Parameters:
+        filename: The logfile we are examining in this job.
+        unique_ip_address: A list of IpAddress() objects.
+
+    Returns:
+        unique_ip_address: A list of unique IPAddress()
+            objects with dates included.
+    """
+    import csv
+    from timestring import Date
+    print('Determining date/time ranges for each unique IP...')
+    file = open(filename, 'r', encoding='utf-8')
+    logfile_reader = csv.reader(file)
+    next(logfile_reader)
+    row = next(logfile_reader)
+    ip_column = findIpColumn(row)
+    time_column = findTimeColumn(row)
+    file.seek(0)
+    next(logfile_reader)
+    for ip in unique_ip_address:
+        file.seek(0)
+        for entry in logfile_reader:
+            if ip.ip == entry[ip_column]:
+                entry_time = Date(entry[time_column])
+                if ip.startTime > entry_time.to_unixtime():
+                    ip.startTime = entry_time.to_unixtime()
+                if ip.endTime < entry_time.to_unixtime():
+                    ip.endTime = entry_time.to_unixtime()
+    return unique_ip_address
 
 
 def run(filename, incident_id, seen):
     all_ip_address = scrapeIPs(filename)
     unique_ip_address = getUniqueIps(all_ip_address)
+    unique_ip_address = getTimerange(filename, unique_ip_address)
     if not seen:
         sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id)
     else:
@@ -203,4 +271,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print('Program complete.')

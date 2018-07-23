@@ -49,13 +49,15 @@ def initialize(purge):
 @click.argument('filename')
 @click.option('--whois', is_flag=True, help='Get WHOIS for top <INT> IPs.')
 @click.option('--incidentid', required=True)
-def ip(filename, whois, incidentid):
+@click.option('--tor', is_flag=True, help='Identify TOR exit nodes among top <INT> IPs.')
+def ip(filename, whois, incidentid, tor):
     """
     Finds all unique IP addresses and their apperance count in FILENAME.
     The file given to this tool must be a *.csv file that contains at least one column of IP addresses.
     """
     import cfltools.logparse.getuniqueip as GetUnique
     import cfltools.logparse.getwhois as GetWhois
+    import cfltools.logparse.checkforTor as CheckTor
     if not cflt_utils.checkIncidentNameExists(incidentid):
         print('Incident name {} does not exist.'.format(incidentid))
         print('Try creating the incident with `cfltools createincident` '+
@@ -67,6 +69,8 @@ def ip(filename, whois, incidentid):
         cflt_utils.markFileAsSeen(filename, incidentid)
     if whois:
         GetWhois.run(incidentid)
+    if tor:
+        CheckTor.run(incidentid)
 
 
 @cli.command()
