@@ -243,6 +243,7 @@ def getTimerange(filename, unique_ip_address):
     time_column = findTimeColumn(row)
     file.seek(0)
     next(logfile_reader)
+    # TODO: get this runtime under O(n^2)
     for ip in unique_ip_address:
         file.seek(0)
         for entry in logfile_reader:
