@@ -1,8 +1,6 @@
 import csv  # csv reader functions
 from collections import Counter  # count uniques in a file quickly, O(nlogn)
-import sys  # syscalls
 from decimal import Decimal  # just to show decimals with lower precision
-import time  # timing stuff
 
 
 # Global Variables #
@@ -23,7 +21,8 @@ def findTimeColumn(row):
     Parameters:
         row: A row of a logfile
     Returns:
-        iterator: An integer defining the row that contains a valid date string.
+        iterator: An integer defining the row that contains a valid date
+            string.
     """
     from timestring import Date
     iterator = 0
@@ -130,7 +129,6 @@ def scrapeIPs(filename):
     next(logfile_reader)
     row = next(logfile_reader)
     ip_column = findIpColumn(row)
-    time_column = findTimeColumn(row)
     file.seek(0)  # Return to the top of the csv.
     next(logfile_reader)  # Skip the header row.
     print('Processing ' + str(logsize) + ' entries.')
@@ -201,18 +199,17 @@ def getUniqueIps(all_ip_address):
     return unique_ip_address
 
 
-def sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id):
+def sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id, conn):
     print(APPFOLDER)
-    import sqlite3
-    conn = sqlite3.connect(APPFOLDER+'/incident.db')
     c = conn.cursor()
     for ip in unique_ip_address:
         c.execute("""
-            INSERT INTO ipaddrs(ip,number_occurances,incident_id,start_time,end_time)
+            INSERT INTO ipaddrs(ip,number_occurances,incident_id,
+                                start_time,end_time)
             VALUES(?,?,?,?,?)
-            """, (ip.ip, ip.numOccurances, incident_id, ip.startTime, ip.endTime))
+            """, (ip.ip, ip.numOccurances, incident_id, ip.startTime,
+                  ip.endTime))
     conn.commit()
-    conn.close()
 
 
 def getTimerange(filename, unique_ip_address):
@@ -261,7 +258,10 @@ def run(filename, incident_id, seen):
     unique_ip_address = getUniqueIps(all_ip_address)
     unique_ip_address = getTimerange(filename, unique_ip_address)
     if not seen:
-        sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id)
+        import sqlite3
+        db_connection = sqlite3.connect(config['USER']['db_loc'])
+        sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id, db_connection)
+        db_connection.close()
     else:
         print('File was already added to database. Skipping database export.')
 

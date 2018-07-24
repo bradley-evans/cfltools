@@ -1,14 +1,14 @@
-from cfltools.settings import APPFOLDER, INSTALLPATH
+from cfltools.settings import APPFOLDER
+import configparser
+config = configparser.ConfigParser()
+config.read(APPFOLDER + '/cfltools.ini')
 
 
-def loadISPDBfromFile(filename):
+def loadISPDBfromFile(filename, conn):
     """Loads ASN information for known ISPs into the ISP table of the database.
     Requires that the csv file used for data import be standardized.
     """
     import csv
-    import sqlite3
-    db_loc = APPFOLDER + '/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     query = """
         INSERT INTO isp
@@ -18,21 +18,17 @@ def loadISPDBfromFile(filename):
         csv_in = csv.reader(input)
         for data in csv_in:
             asn = data[0]
-            if not checkAsnExists(asn):
+            if not checkAsnExists(asn, conn):
                 from pprint import pprint
                 pprint(data)
                 c.execute(query,tuple(data))
     conn.commit()
-    conn.close()
 
 
-def saveISPDBtoFile(filename):
+def saveISPDBtoFile(filename, conn):
     """Saves the current contents of the ASN database to the install directory.
     """
     import csv
-    import sqlite3
-    db_loc = APPFOLDER + '/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     query = """
         SELECT * FROM isp
@@ -42,18 +38,15 @@ def saveISPDBtoFile(filename):
         csv_out = csv.writer(out)
         for row in data:
             csv_out.writerow(row)
-    conn.close()
 
 
-def removeAsnFromDatabase(asn):
+def removeAsnFromDatabase(asn, conn):
     """Helper function which removes ISP information from database.
 
     Parameters:
         asn: ASN to be removed.
+        conn: A sqlite3 database connection.
     """
-    import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     query = """
         DELETE FROM isp
@@ -61,7 +54,6 @@ def removeAsnFromDatabase(asn):
         """
     c.execute(query,(asn,))
     conn.commit()
-    conn.close()
 
 
 def getAsnFromUser(asn, desc):
@@ -114,7 +106,7 @@ def getAsnFromUser(asn, desc):
             online_serv_address, phone, fax, email, notes, req_nda)
 
 
-def addAsnToDatabase(asn, desc):
+def addAsnToDatabase(asn, desc, conn):
     """Helper function which adds ISP information to the database.
 
     Parameters:
@@ -122,9 +114,6 @@ def addAsnToDatabase(asn, desc):
             usually obtained via a WHOIS lookup.
         desc: The description of the ASN owner, usually the name of an ISP.
     """
-    import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     query = """
         INSERT INTO isp(asn, description, contact_name, online_service, online_attn,
@@ -138,39 +127,31 @@ def addAsnToDatabase(asn, desc):
         # Entry is not unique!
         pass
     conn.commit()
-    conn.close()
 
 
-def checkAsnExists(asn):
+def checkAsnExists(asn, conn):
     """Verifies if an ASN number exists in the database.
     Returns true if exists, false if not.
     Parameters:
         asn: String representing an ASN number.
     """
-    import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     query = """
         SELECT asn FROM isp
         WHERE asn = ?
         """
     asnlist = c.execute(query, (asn,)).fetchall()
-    conn.close()
     if len(asnlist) > 0:
         return True
     return False
 
 
-def addWhoisToDatabase(iplist):
+def addWhoisToDatabase(iplist, conn):
     """Helper function which adds whois information to the database.
 
     Parameters:
         iplist: A list of dicts that contain relevant ipwhois data.
     """
-    import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     query = """
         UPDATE ipaddrs
@@ -188,7 +169,6 @@ def addWhoisToDatabase(iplist):
             )
         )
     conn.commit()
-    conn.close()
 
 
 def getWhois(iplist):
@@ -238,33 +218,25 @@ def getWhois(iplist):
     return iplist_whois
 
 
-def getIPlist(incident_name):
+def getIPlist(incident_name, conn):
     """Function that retrieves all IPs associated with incident_name.
     Returns a list of ip address strings.
     Parameters:
         incident_name: String representing the incident name.
     """
-    import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     iplist = c.execute("""
         SELECT ip,number_occurances FROM ipaddrs
         WHERE incident_id = ?
         """, (incident_name,)).fetchall()
     # Get unique values only
-    conn.close()
     return iplist
 
 
-def getMissingASNfromUser():
+def getMissingASNfromUser(conn):
     """Collect missing ASNs from user.
     """
-    import sqlite3
     from cfltools.cflt_utils import safeprompt
-    db_loc = APPFOLDER+'/incident.db'
-    conn = sqlite3.connect(db_loc)
-    c = conn.cursor()
     query = """
         SELECT asn, asn_description FROM ipaddrs
         WHERE whois_done = 'Y'
@@ -274,18 +246,16 @@ def getMissingASNfromUser():
     conn.close()
     iterator = 1
     numNewEntry = 0
-    from pprint import pprint
-    pprint(asnlist)
     for entry in asnlist:
         asn = entry[0]
         if asn == None:
             continue
-        if not checkAsnExists(asn):
+        if not checkAsnExists(asn, conn):
             numNewEntry = numNewEntry + 1
     for entry in asnlist:
         asn = entry[0]
         desc = entry[1]
-        if not checkAsnExists(asn):
+        if not checkAsnExists(asn, conn):
             if asn == None:
                 continue
             print('Currently reviewing new ASN entry {} '\
@@ -299,15 +269,18 @@ def getMissingASNfromUser():
                 break
     print('ASN entry complete.')
 
+
 def run(incident_name):
     """Function run when the module is called from the CLI.
     Parameters:
         incident_name: String representing an incident name.
     """
-    print(APPFOLDER)
-    iplist = getIPlist(incident_name)
+    import sqlite3
+    db_connection = sqlite3.connect(config['USER']['db_loc'])
+    iplist = getIPlist(incident_name, db_connection)
     iplist_whois = getWhois(iplist)
-    addWhoisToDatabase(iplist_whois)
+    addWhoisToDatabase(iplist_whois, db_connection)
+    db_connection.close()
 
 
 def asScript():
