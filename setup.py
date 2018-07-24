@@ -11,7 +11,8 @@ setup(
             'pycountry_convert',
             'netaddr',
             'appdirs',
-            'timestring'
+            'timestring',
+            'requests'
             ],
         entry_points='''
             [console_scripts]

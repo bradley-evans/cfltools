@@ -15,14 +15,3 @@ def initialize_defaults():
     config['USER'] = {}
     with open(default_appfolder + '/cfltools.ini', 'w') as configfile:
         config.write(configfile)
-
-def initialize_tests():
-    config = configparser.ConfigParser()
-    config['UNIT_TESTS'] = {'testval': 'foo',
-                            'db_loc': APPFOLDER + '/test.db',
-                            'max_tor_requests': '10',
-                            'max_whois_requests': '10'
-                            }
-
-    with open(APPFOLDER + '/cfltools.ini', 'w') as configfile:
-        config.write(configfile)
