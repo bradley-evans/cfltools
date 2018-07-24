@@ -1,6 +1,7 @@
 import click
-from appdirs import *
 import cfltools.cflt_utils as cflt_utils
+import cfltools.config as cflt_config
+
 
 # Global Variables #
 from cfltools.settings import *
@@ -12,6 +13,7 @@ def cli():
     This is a set of tools for computer forensics analysts and incident responders that aids in quickly parsing and examining server logs.
     To get help with a subcommand, use cfltools subcommand --help.
     """
+    print('cfltools version 0.0.1')
     pass
 
 
@@ -43,6 +45,7 @@ def initialize(purge):
         if purge:
             print('Purge flag enabled. Replacing databases with default, empty database!')
         cflt_utils.createDatabase(APPFOLDER)
+    cflt_config.initialize_defaults()
 
 
 @cli.command()
@@ -108,19 +111,21 @@ def database(saveasn, loadasn, fillmissingasn):
     """
     Database IO operations
     """
+    import sqlite3
+    db_connection = sqlite3.connect(config['USER']['db_loc'])
     if saveasn:
         import cfltools.logparse.getwhois as getwhois
         from cfltools.cflt_utils import safeprompt
         filename = safeprompt("Enter filename to save ASN database to: ",'csv')
-        getwhois.saveISPDBtoFile(filename)
+        getwhois.saveISPDBtoFile(filename, db_connection)
     if loadasn:
         import cfltools.logparse.getwhois as getwhois
         from cfltools.cflt_utils import safeprompt
         filename = safeprompt("Enter filename to load ASN database from: ",'csv')
-        getwhois.loadISPDBfromFile(filename)
+        getwhois.loadISPDBfromFile(filename, db_connection)
     if fillmissingasn:
         import cfltools.logparse.getwhois as getwhois
-        getwhois.getMissingASNfromUser()
+        getwhois.getMissingASNfromUser(db_connection)
 
 
 @cli.command()

@@ -1,3 +1,12 @@
+import pytest
+import configparser
+from cfltools.settings import APPFOLDER
+
+
+config = configparser.ConfigParser()
+config.read(APPFOLDER + '/cfltools.ini')
+
+
 def test_findipcolumn():
     import cfltools.logparse.getuniqueip as getuniqueip
     testrow = [
@@ -46,13 +55,13 @@ def test_getAsnFromUser():
     assert v10 == 'N'
 
 
-def test_checkAsnExists():
+def test_checkAsnExists(dummy_db_conn):
     import cfltools.logparse.getwhois as getwhois
     asn = '9999999'
-    assert getwhois.checkAsnExists(asn) == False
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
 
 
-def test_ASNDatabaseFileIO():
+def test_ASNDatabaseFileIO(dummy_db_conn):
     import cfltools.logparse.getwhois as getwhois
     from io import StringIO
     import sys
@@ -69,16 +78,16 @@ def test_ASNDatabaseFileIO():
             'This is a test entry.\n'
             'n\n'
             'y\n')
-    getwhois.addAsnToDatabase(asn,desc)
-    assert getwhois.checkAsnExists(asn) == True
-    getwhois.saveISPDBtoFile('testfile_asndatabasefileio.csv')
-    getwhois.removeAsnFromDatabase(asn)
-    assert getwhois.checkAsnExists(asn) == False
-    getwhois.loadISPDBfromFile('testfile_asndatabasefileio.csv')
-    assert getwhois.checkAsnExists(asn) == True
+    getwhois.addAsnToDatabase(asn, desc, dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == True
+    getwhois.saveISPDBtoFile('testfile_asndatabasefileio.csv', dummy_db_conn)
+    getwhois.removeAsnFromDatabase(asn, dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
+    getwhois.loadISPDBfromFile('testfile_asndatabasefileio.csv', dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == True
     os.remove('testfile_asndatabasefileio.csv')
-    getwhois.removeAsnFromDatabase(asn)
-    assert getwhois.checkAsnExists(asn) == False
+    getwhois.removeAsnFromDatabase(asn, dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
 
 
 def test_getTimerange():
