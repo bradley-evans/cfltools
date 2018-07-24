@@ -4,8 +4,18 @@ import os
 from cfltools.settings import APPFOLDER
 
 
+open(APPFOLDER + '/cfltools.ini', 'a').close()
 config = configparser.ConfigParser()
-config.read(APPFOLDER + '/cfltools.ini')
+
+
+def initialize_tests():
+    config['UNIT_TESTS'] = {'testval': 'foo',
+                            'db_loc': APPFOLDER + '/test.db',
+                            'max_tor_requests': '10',
+                            'max_whois_requests': '10'
+                            }
+    with open(APPFOLDER + '/cfltools.ini', 'w') as configfile:
+        config.write(configfile)
 
 
 @pytest.fixture(scope="module")
@@ -15,8 +25,11 @@ def dummy_db_conn():
     """
     import sqlite3
     import cfltools.dbutils as dbutils
+    initialize_tests()
     conn = sqlite3.connect(config['UNIT_TESTS']['db_loc'])
     dbutils.validateDB(conn)
     yield conn
     conn.close()
     os.remove(config['UNIT_TESTS']['db_loc'])
+
+
