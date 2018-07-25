@@ -5,12 +5,11 @@ from cfltools.settings import APPFOLDER
 config = configparser.ConfigParser()
 
 
-def test_defaultconfig():
+def test_defaultconfig(dummy_config):
     import os.path
     assert os.path.isfile(APPFOLDER + '/cfltools.ini') == True
-    config.read(APPFOLDER + '/cfltools.ini')
-    assert config['UNIT_TESTS']['testval'] == 'foo'
-    testconfig = config['UNIT_TESTS']
+    assert dummy_config["UNIT_TESTS"]["testval"] == 'foo'
+    testconfig = dummy_config['UNIT_TESTS']
     assert testconfig['testval'] == 'foo'
 
 

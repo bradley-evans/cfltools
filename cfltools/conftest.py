@@ -37,3 +37,14 @@ def dummy_db_conn():
     os.remove(config['UNIT_TESTS']['db_loc'])
 
 
+@pytest.fixture(scope="module")
+def dummy_config():
+    configstring = '[UNIT_TESTS]\n' \
+                   'testval = foo\n' \
+                   'db_loc = {}/test.db\n' \
+                   'max_tor_requests = 10\n' \
+                   'max_whois_requests = 10\n' \
+                   .format(APPFOLDER)
+    config = configparser.ConfigParser()
+    config.read_string(configstring)
+    return config
