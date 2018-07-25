@@ -123,8 +123,8 @@ def test_checkExonoraTor():
     assert checkExonoraTor('1.1.1.1',1532174400) == False
 
 
-def test_checkIPList():
+def test_tor_checkIPList(dummy_db_conn):
     import cfltools.logparse.checkforTor as checkforTor
-    iplist = checkforTor.getIPList('test')
-    checkforTor.checkIPList(iplist)
+    iplist = checkforTor.getIPList('test', dummy_db_conn)
+    checkforTor.checkIPList(iplist, dummy_db_conn)
     # TODO: actually assert something here.

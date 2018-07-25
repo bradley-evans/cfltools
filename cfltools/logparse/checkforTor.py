@@ -26,10 +26,14 @@ def checkExonoraTor(ip,posix_time):
     raise UserWarning
 
 
-def checkIPList(iplist):
-    import sqlite3, time
-    db_loc = APPFOLDER + '/incident.db'
-    conn = sqlite3.connect(db_loc)
+from cfltools.settings import APPFOLDER
+import configparser
+config = configparser.ConfigParser()
+config.read(APPFOLDER + '/cfltools.ini')
+
+
+def checkIPList(iplist, conn):
+    import time
     c = conn.cursor()
     query = """
         UPDATE ipaddrs
@@ -52,20 +56,18 @@ def checkIPList(iplist):
         iterator += 1
 
 
-def getIPList(incidentid):
-    import sqlite3
-    db_loc = APPFOLDER + '/incident.db'
-    conn = sqlite3.connect(db_loc)
+def getIPList(incidentid, conn):
     c = conn.cursor()
     query = """
         SELECT ip, end_time FROM ipaddrs
         WHERE incident_id = ?
         """
     data = c.execute(query, (incidentid,)).fetchall()
-    conn.close()
     return data
 
 
-def run(incidentid):
-    iplist = getIPList(incidentid)
-    checkIPList(iplist)
+def run(incidentid, conn):
+    import sqlite3
+    db_connection = sqlite3.connect(config['USER']['db_loc'])
+    iplist = getIPList(incidentid, db_connection)
+    checkIPList(iplist, db_connection)
