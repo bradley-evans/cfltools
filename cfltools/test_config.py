@@ -6,6 +6,8 @@ config = configparser.ConfigParser()
 
 
 def test_defaultconfig():
+    import os.path
+    assert os.path.isfile(APPFOLDER + '/cfltools.ini') == True
     config.read(APPFOLDER + '/cfltools.ini')
     assert config['UNIT_TESTS']['testval'] == 'foo'
     testconfig = config['UNIT_TESTS']

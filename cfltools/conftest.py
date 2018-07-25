@@ -11,6 +11,8 @@ config = configparser.ConfigParser()
 
 
 def initialize_tests():
+    if not os.path.exists(APPFOLDER):
+        os.makedirs(APPFOLDER)
     config['UNIT_TESTS'] = {'testval': 'foo',
                             'db_loc': APPFOLDER + '/test.db',
                             'max_tor_requests': '10',
