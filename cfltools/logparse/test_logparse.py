@@ -1,3 +1,12 @@
+import pytest
+import configparser
+from cfltools.settings import APPFOLDER
+
+
+config = configparser.ConfigParser()
+config.read(APPFOLDER + '/cfltools.ini')
+
+
 def test_findipcolumn():
     import cfltools.logparse.getuniqueip as getuniqueip
     testrow = [
@@ -46,13 +55,13 @@ def test_getAsnFromUser():
     assert v10 == 'N'
 
 
-def test_checkAsnExists():
+def test_checkAsnExists(dummy_db_conn):
     import cfltools.logparse.getwhois as getwhois
     asn = '9999999'
-    assert getwhois.checkAsnExists(asn) == False
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
 
 
-def test_ASNDatabaseFileIO():
+def test_ASNDatabaseFileIO(dummy_db_conn):
     import cfltools.logparse.getwhois as getwhois
     from io import StringIO
     import sys
@@ -69,16 +78,16 @@ def test_ASNDatabaseFileIO():
             'This is a test entry.\n'
             'n\n'
             'y\n')
-    getwhois.addAsnToDatabase(asn,desc)
-    assert getwhois.checkAsnExists(asn) == True
-    getwhois.saveISPDBtoFile('testfile_asndatabasefileio.csv')
-    getwhois.removeAsnFromDatabase(asn)
-    assert getwhois.checkAsnExists(asn) == False
-    getwhois.loadISPDBfromFile('testfile_asndatabasefileio.csv')
-    assert getwhois.checkAsnExists(asn) == True
+    getwhois.addAsnToDatabase(asn, desc, dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == True
+    getwhois.saveISPDBtoFile('testfile_asndatabasefileio.csv', dummy_db_conn)
+    getwhois.removeAsnFromDatabase(asn, dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
+    getwhois.loadISPDBfromFile('testfile_asndatabasefileio.csv', dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == True
     os.remove('testfile_asndatabasefileio.csv')
-    getwhois.removeAsnFromDatabase(asn)
-    assert getwhois.checkAsnExists(asn) == False
+    getwhois.removeAsnFromDatabase(asn, dummy_db_conn)
+    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
 
 
 def test_getTimerange():
@@ -103,10 +112,10 @@ def test_getTimerange():
     testfile.close()
     new_unique_list = getuniqueip.getTimerange('timerange_test.csv',
                                                unique_ip_address)
-    assert new_unique_list[0].startTime == 1514797261
-    assert new_unique_list[0].endTime == 1514797270
-    assert new_unique_list[1].startTime == 1517565722
-    assert new_unique_list[1].endTime == 1517565740
+    assert new_unique_list[0].startTime == 1514768461
+    assert new_unique_list[0].endTime == 1514768470
+    assert new_unique_list[1].startTime == 1517536922
+    assert new_unique_list[1].endTime == 1517536940
 
 def test_checkExonoraTor():
     from cfltools.logparse.checkforTor import checkExonoraTor
@@ -114,8 +123,8 @@ def test_checkExonoraTor():
     assert checkExonoraTor('1.1.1.1',1532174400) == False
 
 
-def test_checkIPList():
+def test_tor_checkIPList(dummy_db_conn):
     import cfltools.logparse.checkforTor as checkforTor
-    iplist = checkforTor.getIPList('test')
-    checkforTor.checkIPList(iplist)
+    iplist = checkforTor.getIPList('test', dummy_db_conn)
+    checkforTor.checkIPList(iplist, dummy_db_conn)
     # TODO: actually assert something here.
