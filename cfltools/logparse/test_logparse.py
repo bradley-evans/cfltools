@@ -112,10 +112,10 @@ def test_getTimerange():
     testfile.close()
     new_unique_list = getuniqueip.getTimerange('timerange_test.csv',
                                                unique_ip_address)
-    assert new_unique_list[0].startTime == 1514797261
-    assert new_unique_list[0].endTime == 1514797270
-    assert new_unique_list[1].startTime == 1517565722
-    assert new_unique_list[1].endTime == 1517565740
+    assert new_unique_list[0].startTime == 1514768461
+    assert new_unique_list[0].endTime == 1514768470
+    assert new_unique_list[1].startTime == 1517536922
+    assert new_unique_list[1].endTime == 1517536940
 
 def test_checkExonoraTor():
     from cfltools.logparse.checkforTor import checkExonoraTor

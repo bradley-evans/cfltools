@@ -11,7 +11,7 @@ setup(
             'pycountry_convert',
             'netaddr',
             'appdirs',
-            'timestring',
+            'dateparser',
             'requests'
             ],
         entry_points='''

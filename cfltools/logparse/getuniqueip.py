@@ -24,7 +24,7 @@ def findTimeColumn(row):
         iterator: An integer defining the row that contains a valid date
             string.
     """
-    from timestring import Date
+    import dateparser
     iterator = 0
     for item in row:
         if item.isdigit():
@@ -32,11 +32,10 @@ def findTimeColumn(row):
             # being detected as date/time information
             iterator += 1
             continue
-        try:
-            this = Date(item)
+        this = dateparser.parse(item)
+        if this:
             return iterator
-        except:
-            iterator += 1
+        iterator += 1
     return None
 
 
@@ -230,7 +229,7 @@ def getTimerange(filename, unique_ip_address):
             objects with dates included.
     """
     import csv
-    from timestring import Date
+    import dateparser
     print('Determining date/time ranges for each unique IP...')
     file = open(filename, 'r', encoding='utf-8')
     logfile_reader = csv.reader(file)
@@ -245,11 +244,14 @@ def getTimerange(filename, unique_ip_address):
         file.seek(0)
         for entry in logfile_reader:
             if ip.ip == entry[ip_column]:
-                entry_time = Date(entry[time_column])
-                if ip.startTime > entry_time.to_unixtime():
-                    ip.startTime = entry_time.to_unixtime()
-                if ip.endTime < entry_time.to_unixtime():
-                    ip.endTime = entry_time.to_unixtime()
+                entry_time = dateparser.parse(entry[time_column],
+                             settings={'TIMEZONE': 'UTC',
+                                       'RETURN_AS_TIMEZONE_AWARE': True
+                                       }).timestamp()
+                if ip.startTime > entry_time:
+                    ip.startTime = entry_time
+                if ip.endTime < entry_time:
+                    ip.endTime = entry_time
     return unique_ip_address
 
 
