@@ -2,6 +2,8 @@
 
 ![img](https://travis-ci.com/bradley-evans/cfltools.svg?branch=master)
 
+[![Coverage Status](https://coveralls.io/repos/github/bradley-evans/cfltools/badge.svg?branch=master)](https://coveralls.io/github/bradley-evans/cfltools?branch=master)
+
 A logfile analysis tool for cyber forensics investigators.
 
 Designed by Bradley Evans, written in Python 3.
