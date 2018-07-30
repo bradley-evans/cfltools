@@ -1,5 +1,6 @@
 from cfltools.settings import APPFOLDER, INSTALLPATH
 
+
 def checkExonoraTor(ip,posix_time):
     """Check if an IP was a TOR exit node at a particular time by querying ExonoraTor.
 
@@ -26,13 +27,7 @@ def checkExonoraTor(ip,posix_time):
     raise UserWarning
 
 
-from cfltools.settings import APPFOLDER
-import configparser
-config = configparser.ConfigParser()
-config.read(APPFOLDER + '/cfltools.ini')
-
-
-def checkIPList(iplist, conn):
+def checkIPList(iplist, conn, config):
     import time
     c = conn.cursor()
     query = """
@@ -41,7 +36,7 @@ def checkIPList(iplist, conn):
         WHERE ip=?
         """
     isTor = False
-    query_limit = 10
+    query_limit = int(config['USER']['max_tor_requests'])
     iterator = 0
     print('Checking for TOR exit nodes...')
     for item in iplist:
@@ -66,8 +61,11 @@ def getIPList(incidentid, conn):
     return data
 
 
-def run(incidentid, conn):
+def run(incidentid):
     import sqlite3
+    import configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
     db_connection = sqlite3.connect(config['USER']['db_loc'])
     iplist = getIPList(incidentid, db_connection)
-    checkIPList(iplist, db_connection)
+    checkIPList(iplist, db_connection, config)

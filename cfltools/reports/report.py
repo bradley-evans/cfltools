@@ -4,7 +4,7 @@ class IpAddressReport():
 
     def populateWhois(self, asn):
         import sqlite3
-        db_loc = APPFOLDER + '/incident.db'
+        db_loc = self.config['USER']['db_loc']
         conn = sqlite3.connect(db_loc)
         def dict_factory(cursor,row):
             d = {}
@@ -23,7 +23,7 @@ class IpAddressReport():
 
     def getNumOccurances(self, ip):
         import sqlite3
-        db_loc = APPFOLDER + '/incident.db'
+        db_loc = self.config['USER']['db_loc']
         conn = sqlite3.connect(db_loc)
         c = conn.cursor()
         query = """
@@ -31,22 +31,27 @@ class IpAddressReport():
             WHERE ip=?
             """
         data = c.execute(query,(ip,)).fetchall()
+        conn.close()
         return data
 
     def checkWatchlist():
         # TODO: check if this IP exists in a watchlist.
         pass
 
-    def __init__(self, ip, asn):
+    def __init__(self, ip, asn, config):
         from cfltools.logparse.getwhois import checkAsnExists
+        self.config = config
         self.ip = ip
         self.occurances = self.getNumOccurances(self.ip)
         self.asn = asn
-        if checkAsnExists(asn):
+        import sqlite3
+        conn = sqlite3.connect(config['USER']['db_loc'])
+        if checkAsnExists(asn, conn):
             self.isWhoisDone = True
             self.whois = self.populateWhois(asn)
         else:
             self.isWhoisDone = False
+        conn.close()
 
 
 class IpAddressReport_CLI(IpAddressReport):
@@ -81,7 +86,7 @@ class IpAddressReport_CLI(IpAddressReport):
         return string
 
 
-def reportUniqueIP(incidentid):
+def reportUniqueIP(incidentid, config):
     """Reports unique IP addresses associated with an incident.
 
     Parameters:
@@ -91,23 +96,24 @@ def reportUniqueIP(incidentid):
             to the IP addresses found with the incident.
     """
     import sqlite3
-    db_loc = APPFOLDER + '/incident.db'
-    conn = sqlite3.connect(db_loc)
+    conn = sqlite3.connect(config['USER']['db_loc'])
     c = conn.cursor()
     query = """
         SELECT ip, asn FROM ipaddrs
+        WHERE incident_id = ?
         """
-    data = c.execute(query).fetchall()
-    c.close()
+    data = c.execute(query, (incidentid,)).fetchall()
+    conn.close()
     iplist = []
     for entry in data:
-        this = IpAddressReport_CLI(entry[0],entry[1])
+        this = IpAddressReport_CLI(entry[0],entry[1], config)
         iplist.append(this)
     return iplist
 
 
-def reportToCLI(incidentid):
-    iplist = reportUniqueIP(incidentid)
+def reportToCLI(incidentid, config):
+    print('Report for incident {}'.format(incidentid))
+    iplist = reportUniqueIP(incidentid, config)
     for record in iplist:
         record.printCLI()
 

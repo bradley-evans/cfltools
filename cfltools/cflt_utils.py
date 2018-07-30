@@ -25,17 +25,14 @@ def safeprompt(question,qtype):
     raise InputError('Failed to validate input. {}, response was {}'.format(question,answer))
 
 
-def listIncidents():
+def listIncidents(conn):
     import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
-    conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     c.execute('SELECT incident_name FROM incidents')
     result = c.fetchall()
     print("Incidents currently in stored in the database:")
     for incident_name in result:
         print(' * ' + incident_name[0])
-    conn.close()
 
 
 def getmd5hash(file):
@@ -49,9 +46,9 @@ def getmd5hash(file):
     return hash_md5.hexdigest()
 
 
-def markFileAsSeen(filename, incident_name):
+def markFileAsSeen(filename, incident_name, config):
     import sqlite3
-    db_loc =  APPFOLDER+'/incident.db'
+    db_loc =  config['USER']['db_loc']
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     md5hash = getmd5hash(filename)
@@ -60,9 +57,9 @@ def markFileAsSeen(filename, incident_name):
     conn.close()
 
 
-def checkFileWasSeen(filename):
+def checkFileWasSeen(filename, config):
     import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
+    db_loc = config['USER']['db_loc']
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     md5hash = getmd5hash(filename)
@@ -75,12 +72,19 @@ def checkFileWasSeen(filename):
     return True
 
 
-def checkIncidentNameExists(incident_name):
+def checkIncidentNameExists(incident_name, config):
     import sqlite3
-    db_loc = APPFOLDER+'/incident.db'
+    db_loc = config['USER']['db_loc']
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
-    c.execute('SELECT incident_name FROM incidents WHERE incident_name = ?',(incident_name,))
+    try:
+        c.execute('SELECT incident_name FROM incidents WHERE incident_name = ?',(incident_name,))
+    except sqlite3.Error as e:
+        print('Database error: {}'.format(e))
+        print('Using database located at {}'.format(db_loc))
+    except:
+        print('Error in checkIncidentNameExists()')
+        print('Using database located at {}'.format(db_loc))
     data = c.fetchall()
     if len(data) == 0:
         conn.close()
@@ -89,11 +93,11 @@ def checkIncidentNameExists(incident_name):
     return True
 
 
-def generateIncident(incident_name):
+def generateIncident(incident_name, config):
     import sqlite3
     from pathlib import Path
     from os import makedirs
-    db_loc =  APPFOLDER+'/incident.db'
+    db_loc = config['USER']['db_loc']
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     incident_description = input('Please enter a description of the incident: ')
@@ -105,9 +109,9 @@ def generateIncident(incident_name):
     conn.close()
 
 
-def checkforDB(loc):
+def checkforDB(config):
     from pathlib import Path
-    incident_db = Path(loc+'/incident.db')
+    incident_db = Path(config['USER']['db_loc'])
     if not incident_db.exists():
         print('Incident database was not found at {}. Initializing the database.'.format(str(incident_db)))
         return False
@@ -115,11 +119,9 @@ def checkforDB(loc):
     return True
 
 
-def createDatabase(loc):
+def createDatabase(config):
     from shutil import copyfile
     from os import getcwd
-    print("In cfl_utils.createDatabase(). loc={}".format(loc))
     print("Script current working directory is {}".format(getcwd()))
     incident_db_default = INSTALLPATH + '/default/default.db'
-    incident_db_target = loc+'/incident.db'
-    copyfile(incident_db_default,incident_db_target)
+    copyfile(incident_db_default,config['USER']['db_loc'])
