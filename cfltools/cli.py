@@ -4,7 +4,7 @@ import cfltools.config as cflt_config
 
 
 # Global Variables #
-from cfltools.settings import *
+from cfltools.settings import APPFOLDER 
 
 
 @click.group()
@@ -13,8 +13,7 @@ def cli():
     This is a set of tools for computer forensics analysts and incident responders that aids in quickly parsing and examining server logs.
     To get help with a subcommand, use cfltools subcommand --help.
     """
-    print('cfltools version 0.0.1')
-    pass
+    print('cfltools version 0.0.2')
 
 
 @cli.command()
@@ -108,7 +107,8 @@ def createincident(incident_name):
 @cli.command()
 @click.option('--show',is_flag=True)
 def incidents(show):
-    import sqlite3, configparser
+    import sqlite3
+    import configparser
     config = configparser.ConfigParser()
     config.read(APPFOLDER + '/cfltools.ini')
     conn = sqlite3.connect(config['USER']['db_loc'])
@@ -125,7 +125,8 @@ def database(saveasn, loadasn, fillmissingasn):
     """
     Database IO operations
     """
-    import sqlite3, configparser
+    import sqlite3
+    import configparser
     config = configparser.ConfigParser()
     config.read(APPFOLDER + '/cfltools.ini')
     db_connection = sqlite3.connect(config['USER']['db_loc'])

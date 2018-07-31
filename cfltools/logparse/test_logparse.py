@@ -58,7 +58,7 @@ def test_getAsnFromUser():
 def test_checkAsnExists(dummy_db_conn):
     import cfltools.logparse.getwhois as getwhois
     asn = '9999999'
-    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
+    assert not getwhois.checkAsnExists(asn, dummy_db_conn)
 
 
 def test_ASNDatabaseFileIO(dummy_db_conn):
@@ -79,15 +79,15 @@ def test_ASNDatabaseFileIO(dummy_db_conn):
             'n\n'
             'y\n')
     getwhois.addAsnToDatabase(asn, desc, dummy_db_conn)
-    assert getwhois.checkAsnExists(asn, dummy_db_conn) == True
+    assert getwhois.checkAsnExists(asn, dummy_db_conn)
     getwhois.saveISPDBtoFile('testfile_asndatabasefileio.csv', dummy_db_conn)
     getwhois.removeAsnFromDatabase(asn, dummy_db_conn)
-    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
+    assert not getwhois.checkAsnExists(asn, dummy_db_conn)
     getwhois.loadISPDBfromFile('testfile_asndatabasefileio.csv', dummy_db_conn)
-    assert getwhois.checkAsnExists(asn, dummy_db_conn) == True
+    assert getwhois.checkAsnExists(asn, dummy_db_conn)
     os.remove('testfile_asndatabasefileio.csv')
     getwhois.removeAsnFromDatabase(asn, dummy_db_conn)
-    assert getwhois.checkAsnExists(asn, dummy_db_conn) == False
+    assert not getwhois.checkAsnExists(asn, dummy_db_conn)
 
 
 def test_getTimerange():
@@ -119,8 +119,8 @@ def test_getTimerange():
 
 def test_checkExonoraTor():
     from cfltools.logparse.checkforTor import checkExonoraTor
-    assert checkExonoraTor('103.28.52.93',1532174400) == True
-    assert checkExonoraTor('1.1.1.1',1532174400) == False
+    assert checkExonoraTor('103.28.52.93',1532174400)
+    assert not checkExonoraTor('1.1.1.1',1532174400)
 
 
 def test_tor_checkIPList(dummy_db_conn, dummy_config):
