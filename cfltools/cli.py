@@ -1,16 +1,23 @@
+"""
+Command line interface for cfltools.
+"""
+
+
+from __future__ import print_function
 import click
-import cfltools.cflt_utils as cflt_utils
+import cfltools.cflt_utils as cflt_utils  # pylint: disable=C0414
 import cfltools.config as cflt_config
 
 
 # Global Variables #
-from cfltools.settings import APPFOLDER 
+from cfltools.settings import APPFOLDER
 
 
 @click.group()
 def cli():
     """
-    This is a set of tools for computer forensics analysts and incident responders that aids in quickly parsing and examining server logs.
+    This is a set of tools for computer forensics analysts and incident
+    responders that aids in quickly parsing and examining server logs.
     To get help with a subcommand, use cfltools subcommand --help.
     """
     print('cfltools version 0.0.2')
@@ -18,16 +25,21 @@ def cli():
 
 @cli.command()
 def about():
+    """
+    Prints basic application information.
+    """
     # TODO: print program version here.
     print('cfltools')
-    print('User Data Directory: {}'.format(user_data_dir(APPFOLDER)))
     import os
     installpath = os.path.dirname(__file__)
     print('Install Directory: {}'.format(installpath))
 
 
 @cli.command()
-@click.option('--purge', is_flag=True, help='Destroy existing database and reinitalize.', confirmation_prompt=True)
+@click.option('--purge',
+              is_flag=True,
+              help='Destroy existing database and reinitalize.',
+              confirmation_prompt=True)
 def initialize(purge):
     """
     Create required database and other files.
@@ -37,7 +49,7 @@ def initialize(purge):
     import configparser
     # If the application's user data directory doesn't
     # exist, create it.
-    if (not Path(APPFOLDER).is_dir()):
+    if not Path(APPFOLDER).is_dir():
         print('Application folder {} not detected. Creating it...'.format(APPFOLDER))
         makedirs(APPFOLDER)
     config = configparser.ConfigParser()
@@ -55,10 +67,11 @@ def initialize(purge):
 @click.option('--whois', is_flag=True, help='Get WHOIS for top <INT> IPs.')
 @click.option('--incidentid', required=True)
 @click.option('--tor', is_flag=True, help='Identify TOR exit nodes among top <INT> IPs.')
-def ip(filename, whois, incidentid, tor):
+def ip(filename, whois, incidentid, tor):  # pylint: disable=C0103
     """
     Finds all unique IP addresses and their apperance count in FILENAME.
-    The file given to this tool must be a *.csv file that contains at least one column of IP addresses.
+    The file given to this tool must be a *.csv file that contains at
+    least one column of IP addresses.
     """
     import cfltools.logparse.getuniqueip as GetUnique
     import cfltools.logparse.getwhois as GetWhois
@@ -99,14 +112,18 @@ def createincident(incident_name):
         # related-data (e.g., logfiles) in this directory.
         makedirs(incident_dir)
     if cflt_utils.checkIncidentNameExists(incident_name, config):
-        print("Incident identifier {} is not unique! Select a different incident name.".format(incident_name))
+        print("Incident identifier {} is not unique! Select a different incident name."
+              .format(incident_name))
     else:
         cflt_utils.generateIncident(incident_name, config)
 
 
 @cli.command()
-@click.option('--show',is_flag=True)
+@click.option('--show', is_flag=True)
 def incidents(show):
+    """
+    List, modify, and remove incidents and incident identifiers.
+    """
     import sqlite3
     import configparser
     config = configparser.ConfigParser()
@@ -131,30 +148,35 @@ def database(saveasn, loadasn, fillmissingasn):
     config.read(APPFOLDER + '/cfltools.ini')
     db_connection = sqlite3.connect(config['USER']['db_loc'])
     if saveasn:
-        import cfltools.logparse.getwhois as getwhois
+        from cfltools.logparse.getwhois import saveISPDBtoFile
         from cfltools.cflt_utils import safeprompt
-        filename = safeprompt("Enter filename to save ASN database to: ",'csv')
-        getwhois.saveISPDBtoFile(filename, db_connection)
+        filename = safeprompt('Enter filename to save ASN database to: ',
+                              'csv')
+        saveISPDBtoFile(filename, db_connection)
     if loadasn:
-        import cfltools.logparse.getwhois as getwhois
+        from cfltools.logparse.getwhois import loadISPDBfromFile
         from cfltools.cflt_utils import safeprompt
-        filename = safeprompt("Enter filename to load ASN database from: ",'csv')
-        getwhois.loadISPDBfromFile(filename, db_connection)
+        filename = safeprompt('Enter filename to load ASN database from: ',
+                              'csv')
+        loadISPDBfromFile(filename, db_connection)
     if fillmissingasn:
-        import cfltools.logparse.getwhois as getwhois
-        getwhois.getMissingASNfromUser(db_connection)
+        from cfltools.logparse.getwhois import getMissingASNfromUser
+        getMissingASNfromUser(db_connection)
 
 
 @cli.command()
 @click.argument('incident_id')
 def report(incident_id):
-    import cfltools.reports.report as report
+    """
+    Command line / text reports related to incidents.
+    """
+    import cfltools.reports.report
     from cfltools.cflt_utils import checkIncidentNameExists
     import configparser
     config = configparser.ConfigParser()
     config.read(APPFOLDER + '/cfltools.ini')
     if checkIncidentNameExists(incident_id, config):
-        report.reportToCLI(incident_id, config)
+        cfltools.reports.report.reportToCLI(incident_id, config)
     else:
         print('Incident {} does not exist. You can '
               'show a list of incidents with the command '
