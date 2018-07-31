@@ -105,7 +105,6 @@ def findIpColumn(row):
         ipv4_check = ipv4_address.match(item)
         ipv6_check = ipv6_address.match(item)
         if ipv4_check or ipv6_check:
-            print('Found!')
             return iterator
         iterator = iterator + 1
     print("Could not find a column containing IP addresses!")
@@ -256,12 +255,16 @@ def getTimerange(filename, unique_ip_address):
 
 
 def run(filename, incident_id, seen):
+    import configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
     all_ip_address = scrapeIPs(filename)
     unique_ip_address = getUniqueIps(all_ip_address)
     unique_ip_address = getTimerange(filename, unique_ip_address)
     if not seen:
         import sqlite3
         db_connection = sqlite3.connect(config['USER']['db_loc'])
+        print('Adding to database located at {}...'.format(config['USER']['db_loc']))
         sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id, db_connection)
         db_connection.close()
     else:

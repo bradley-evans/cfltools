@@ -35,16 +35,19 @@ def initialize(purge):
     """
     from pathlib import Path
     from os import makedirs
+    import configparser
     # If the application's user data directory doesn't
     # exist, create it.
     if (not Path(APPFOLDER).is_dir()):
         print('Application folder {} not detected. Creating it...'.format(APPFOLDER))
         makedirs(APPFOLDER)
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
     # If there are missing databases, create them.
-    if (not cflt_utils.checkforDB(APPFOLDER)) | purge:
+    if (not cflt_utils.checkforDB(config)) | purge:
         if purge:
             print('Purge flag enabled. Replacing databases with default, empty database!')
-        cflt_utils.createDatabase(APPFOLDER)
+        cflt_utils.createDatabase(config)
     cflt_config.initialize_defaults()
 
 
@@ -61,15 +64,18 @@ def ip(filename, whois, incidentid, tor):
     import cfltools.logparse.getuniqueip as GetUnique
     import cfltools.logparse.getwhois as GetWhois
     import cfltools.logparse.checkforTor as CheckTor
-    if not cflt_utils.checkIncidentNameExists(incidentid):
+    import configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
+    if not cflt_utils.checkIncidentNameExists(incidentid, config):
         print('Incident name {} does not exist.'.format(incidentid))
         print('Try creating the incident with `cfltools createincident` '+
               'or listing existing incidents with `cfltools incidents --show.`')
         exit(0)
-    seen = cflt_utils.checkFileWasSeen(filename)
+    seen = cflt_utils.checkFileWasSeen(filename, config)
     GetUnique.run(filename, incidentid, seen)
     if not seen:
-        cflt_utils.markFileAsSeen(filename, incidentid)
+        cflt_utils.markFileAsSeen(filename, incidentid, config)
     if whois:
         GetWhois.run(incidentid)
     if tor:
@@ -84,23 +90,31 @@ def createincident(incident_name):
     """
     from os import makedirs
     from pathlib import Path
+    import configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
     incident_dir = APPFOLDER + '/incidents/' + incident_name
     if not Path(incident_dir).is_dir():
         # If a directory corresponding to a particualr incident
         # does not exist, create it. We will store our incident
         # related-data (e.g., logfiles) in this directory.
         makedirs(incident_dir)
-    if cflt_utils.checkIncidentNameExists(incident_name):
+    if cflt_utils.checkIncidentNameExists(incident_name, config):
         print("Incident identifier {} is not unique! Select a different incident name.".format(incident_name))
     else:
-        cflt_utils.generateIncident(incident_name)
+        cflt_utils.generateIncident(incident_name, config)
 
 
 @cli.command()
 @click.option('--show',is_flag=True)
 def incidents(show):
+    import sqlite3, configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
+    conn = sqlite3.connect(config['USER']['db_loc'])
     if show:
-        cflt_utils.listIncidents()
+        cflt_utils.listIncidents(conn)
+    conn.close()
 
 
 @cli.command()
@@ -111,7 +125,9 @@ def database(saveasn, loadasn, fillmissingasn):
     """
     Database IO operations
     """
-    import sqlite3
+    import sqlite3, configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
     db_connection = sqlite3.connect(config['USER']['db_loc'])
     if saveasn:
         import cfltools.logparse.getwhois as getwhois
@@ -133,8 +149,11 @@ def database(saveasn, loadasn, fillmissingasn):
 def report(incident_id):
     import cfltools.reports.report as report
     from cfltools.cflt_utils import checkIncidentNameExists
-    if checkIncidentNameExists(incident_id):
-        report.reportToCLI(incident_id)
+    import configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
+    if checkIncidentNameExists(incident_id, config):
+        report.reportToCLI(incident_id, config)
     else:
         print('Incident {} does not exist. You can '
               'show a list of incidents with the command '

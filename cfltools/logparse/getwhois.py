@@ -1,7 +1,4 @@
 from cfltools.settings import APPFOLDER
-import configparser
-config = configparser.ConfigParser()
-config.read(APPFOLDER + '/cfltools.ini')
 
 
 def loadISPDBfromFile(filename, conn):
@@ -171,7 +168,7 @@ def addWhoisToDatabase(iplist, conn):
     conn.commit()
 
 
-def getWhois(iplist):
+def getWhois(iplist, config):
     """Function which obtains ipwhois data for a list of IP addresses.
 
     Parameters:
@@ -192,7 +189,7 @@ def getWhois(iplist):
     # limit our search to the most frequently occuring IPs in
     # a set of logs. The variable below controls how many of the
     # top IPs to query.
-    query_limit = 10
+    query_limit = int(config['USER']['max_whois_requests'])
     for ip in iplist:
         status = 'Currently: Getting WHOIS data for IP {}    '.format(ip)
         print(status, end='\r')
@@ -237,13 +234,13 @@ def getMissingASNfromUser(conn):
     """Collect missing ASNs from user.
     """
     from cfltools.cflt_utils import safeprompt
+    c = conn.cursor()
     query = """
         SELECT asn, asn_description FROM ipaddrs
         WHERE whois_done = 'Y'
         """
     asnlist = c.execute(query).fetchall()
     asnlist = list(set(asnlist))    # Get unique values only 
-    conn.close()
     iterator = 1
     numNewEntry = 0
     for entry in asnlist:
@@ -264,7 +261,7 @@ def getMissingASNfromUser(conn):
                                 '[Y/N]: '.format(entry[1]),'YN')
             if answer == 'Y':
                 iterator = iterator + 1
-                addAsnToDatabase(asn, desc)
+                addAsnToDatabase(asn, desc, conn)
             else:
                 break
     print('ASN entry complete.')
@@ -272,13 +269,16 @@ def getMissingASNfromUser(conn):
 
 def run(incident_name):
     """Function run when the module is called from the CLI.
+
     Parameters:
         incident_name: String representing an incident name.
     """
-    import sqlite3
+    import sqlite3, configparser
+    config = configparser.ConfigParser()
+    config.read(APPFOLDER + '/cfltools.ini')
     db_connection = sqlite3.connect(config['USER']['db_loc'])
     iplist = getIPlist(incident_name, db_connection)
-    iplist_whois = getWhois(iplist)
+    iplist_whois = getWhois(iplist, config)
     addWhoisToDatabase(iplist_whois, db_connection)
     db_connection.close()
 

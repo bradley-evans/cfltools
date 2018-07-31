@@ -13,11 +13,13 @@ config = configparser.ConfigParser()
 def initialize_tests():
     if not os.path.exists(APPFOLDER):
         os.makedirs(APPFOLDER)
-    config['UNIT_TESTS'] = {'testval': 'foo',
+    config['DEFAULT'] = {'testval': 'foo',
                             'db_loc': APPFOLDER + '/test.db',
                             'max_tor_requests': '10',
                             'max_whois_requests': '10'
                             }
+    config['UNIT_TESTS'] = {}
+    config['USER'] = {}
     with open(APPFOLDER + '/cfltools.ini', 'w') as configfile:
         config.write(configfile)
 
@@ -39,12 +41,14 @@ def dummy_db_conn():
 
 @pytest.fixture(scope="module")
 def dummy_config():
-    configstring = '[UNIT_TESTS]\n' \
+    configstring = '[DEFAULT]\n' \
                    'testval = foo\n' \
                    'db_loc = {}/test.db\n' \
                    'max_tor_requests = 10\n' \
                    'max_whois_requests = 10\n' \
+                   '[UNIT_TESTS]\n' \
+                   '[USER]\n' \
                    .format(APPFOLDER)
     config = configparser.ConfigParser()
     config.read_string(configstring)
-    return config
+    yield config
