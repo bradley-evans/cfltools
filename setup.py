@@ -14,8 +14,10 @@ setup(
             'dateparser',
             'requests'
             ],
-        entry_points='''
-            [console_scripts]
-            cfltools = cfltools.cli:cli
-            ''',
+        entry_points={
+            'console_scripts': [
+                'cfltools = cfltools.cli:cli',
+                'cfltools-gui = cfltools.gui:gui',
+            ]
+        }
      )
