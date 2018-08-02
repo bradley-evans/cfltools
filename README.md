@@ -1,6 +1,6 @@
 # cfltools: Computer Forensic Laboratory Tools
 
-![img](https://travis-ci.com/bradley-evans/cfltools.svg?branch=master)
+[![img](https://travis-ci.com/bradley-evans/cfltools.svg?branch=master)](https://travis-ci.com/bradley-evans/cfltools)
 [![Coverage Status](https://coveralls.io/repos/github/bradley-evans/cfltools/badge.svg?branch=master)](https://coveralls.io/github/bradley-evans/cfltools?branch=master)
 [![CodeFactor](https://www.codefactor.io/repository/github/bradley-evans/cfltools/badge)](https://www.codefactor.io/repository/github/bradley-evans/cfltools)
 [![Documentation Status](https://readthedocs.org/projects/cfltools/badge/?version=latest)](https://cfltools.readthedocs.io/en/latest/?badge=latest)
