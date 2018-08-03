@@ -1,0 +1,44 @@
+#:kivy 1.10.1
+
+<Manager>:
+    sm: screen_manager
+    orientation: 'vertical'
+    id: box
+    
+    ActionBar:
+        pos_hint: {'top':1}
+        ActionView:
+            use_separator: True
+            ActionPrevious:
+                title:'cfltools'
+                with_previous: True
+                on_release: root.set_previous_screen()
+            ActionOverflow:
+            ActionGroup:
+                text:'Log Parsing'
+                ActionButton:
+                    text:'Import Logfile'
+                    on_release: screen_manager.current='logparse'
+                ActionButton:
+                    text:'Placeholder'
+            ActionGroup:
+                text:'Database Management'
+                ActionButton:
+                    text:'Initialize Database'
+                ActionButton:
+                    text:'ASN Data Entry'
+    
+    ScreenManager:
+        id: screen_manager
+        Screen:
+            name: 'start'
+            Label:
+                text: 'Welcome to cfltools.'
+        Screen:
+            name: 'logparse'
+            Label:
+                text: 'Import IP Address Logs'
+            Label:
+                text: 'Use the form below to import a CSV file and perform analysis on the log.'
+
+
