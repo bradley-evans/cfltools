@@ -10,9 +10,11 @@
         size: root.size
         pos: root.pos
         FileChooserListView:
+            size_hint: (1, .8)
             id: filechooser
         Button:
             text: 'Select'
+            size_hint_y: .1
             on_release: root.load(filechooser.path, filechooser.selection)
 
 
@@ -27,7 +29,7 @@
                 text: 'Select .csv log file'
             TextInput:
                 id: logfile_name
-                text: ''
+                hint_text: 'Enter file location here.'
                 multiline: False
             Button:
                 text: 'Browse'

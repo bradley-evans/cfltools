@@ -5,6 +5,7 @@ Other components are located in a Kivy file in this directory.
 
 import kivy
 import os
+import pdb
 
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
@@ -47,8 +48,13 @@ class ScreenLogparse(BoxLayout):
             # TODO: handle this exception correctly
             print("Error: more than one file selected")
             exit(1)
-        self.logfile = filename[0]
-        self.logfile_name.text = self.logfile
+        try:
+            self.logfile = filename[0]
+            self.ids.logfile_name.text = self.logfile
+        except IndexError as e:
+            print(e)
+            self.logfile = ''
+            self.ids.logfile_name.text = self.logfile
         self.dismiss_popup()
 
 
