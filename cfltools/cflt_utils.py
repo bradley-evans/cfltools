@@ -2,7 +2,7 @@
 from cfltools.settings import APPFOLDER, INSTALLPATH
 
 
-def safeprompt(question,qtype):
+def safeprompt(question, qtype):
     """Some custom input validation for prompts.
     """
     valid = False
@@ -22,11 +22,11 @@ def safeprompt(question,qtype):
                 return answer
             print('Filename {} is not a valid .csv file.'.format(answer))
             answer = input('Please enter a filename ending in .csv: ')
-    raise InputError('Failed to validate input. {}, response was {}'.format(question,answer))
+    raise InputError('Failed to validate input. {}, response was {}'
+                     .format(question, answer))
 
 
 def listIncidents(conn):
-    import sqlite3
     c = conn.cursor()
     c.execute('SELECT incident_name FROM incidents')
     result = c.fetchall()
@@ -40,19 +40,20 @@ def getmd5hash(file):
     # identify it.
     import hashlib
     hash_md5 = hashlib.md5()
-    with open(file,"rb") as f:
-        for chunk in iter(lambda: f.read(4096),b""):
+    with open(file, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
 
 def markFileAsSeen(filename, incident_name, config):
     import sqlite3
-    db_loc =  config['USER']['db_loc']
+    db_loc = config['USER']['db_loc']
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     md5hash = getmd5hash(filename)
-    c.execute('INSERT INTO seenFiles(filename,md5,incident_id) VALUES(?,?,?)',(filename,md5hash,incident_name))
+    c.execute('INSERT INTO seenFiles(filename,md5,incident_id) VALUES(?,?,?)',
+              (filename, md5hash, incident_name))
     conn.commit()
     conn.close()
 
@@ -63,7 +64,7 @@ def checkFileWasSeen(filename, config):
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     md5hash = getmd5hash(filename)
-    c.execute('SELECT filename FROM seenFiles WHERE md5 = ?',(md5hash,))
+    c.execute('SELECT filename FROM seenFiles WHERE md5 = ?', (md5hash,))
     data = c.fetchall()
     if len(data) == 0:
         conn.close()
@@ -78,7 +79,8 @@ def checkIncidentNameExists(incident_name, config):
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
     try:
-        c.execute('SELECT incident_name FROM incidents WHERE incident_name = ?',(incident_name,))
+        c.execute('SELECT incident_name FROM incidents WHERE incident_name=?',
+                  (incident_name,))
     except sqlite3.Error as e:
         print('Database error: {}'.format(e))
         print('Using database located at {}'.format(db_loc))
@@ -100,11 +102,13 @@ def generateIncident(incident_name, config):
     db_loc = config['USER']['db_loc']
     conn = sqlite3.connect(db_loc)
     c = conn.cursor()
-    incident_description = input('Please enter a description of the incident: ')
+    incident_description = input('Enter a description of the incident: ')
     folder_loc = APPFOLDER+'/'+incident_name
     if not Path(folder_loc).is_dir():
         makedirs(folder_loc)
-    c.execute('INSERT INTO incidents(incident_name,folder_loc,description) VALUES(?,?,?)',(incident_name,folder_loc,incident_description))
+    c.execute('INSERT INTO incidents(incident_name,folder_loc,description) '
+              'VALUES(?,?,?)',
+              (incident_name, folder_loc, incident_description))
     conn.commit()
     conn.close()
 
@@ -113,7 +117,9 @@ def checkforDB(config):
     from pathlib import Path
     incident_db = Path(config['USER']['db_loc'])
     if not incident_db.exists():
-        print('Incident database was not found at {}. Initializing the database.'.format(str(incident_db)))
+        print('Incident database was not found at {}.'
+              'Initializing the database.'
+              .format(str(incident_db)))
         return False
     print('All required files were detected.')
     return True
@@ -124,4 +130,4 @@ def createDatabase(config):
     from os import getcwd
     print("Script current working directory is {}".format(getcwd()))
     incident_db_default = INSTALLPATH + '/default/default.db'
-    copyfile(incident_db_default,config['USER']['db_loc'])
+    copyfile(incident_db_default, config['USER']['db_loc'])

@@ -50,14 +50,16 @@ def initialize(purge):
     # If the application's user data directory doesn't
     # exist, create it.
     if not Path(APPFOLDER).is_dir():
-        print('Application folder {} not detected. Creating it...'.format(APPFOLDER))
+        print('Application folder {} not detected. Creating it...'
+              .format(APPFOLDER))
         makedirs(APPFOLDER)
     config = configparser.ConfigParser()
     config.read(APPFOLDER + '/cfltools.ini')
     # If there are missing databases, create them.
     if (not cflt_utils.checkforDB(config)) | purge:
         if purge:
-            print('Purge flag enabled. Replacing databases with default, empty database!')
+            print('Purge flag enabled. Replacing databases with default, '
+                  'empty database!')
         cflt_utils.createDatabase(config)
     cflt_config.initialize_defaults()
 
@@ -66,7 +68,8 @@ def initialize(purge):
 @click.argument('filename')
 @click.option('--whois', is_flag=True, help='Get WHOIS for top <INT> IPs.')
 @click.option('--incidentid', required=True)
-@click.option('--tor', is_flag=True, help='Identify TOR exit nodes among top <INT> IPs.')
+@click.option('--tor', is_flag=True, help='Identify TOR exit nodes among '
+                                          'top <INT> IPs.')
 def ip(filename, whois, incidentid, tor):  # pylint: disable=C0103
     """
     Finds all unique IP addresses and their apperance count in FILENAME.
@@ -81,8 +84,8 @@ def ip(filename, whois, incidentid, tor):  # pylint: disable=C0103
     config.read(APPFOLDER + '/cfltools.ini')
     if not cflt_utils.checkIncidentNameExists(incidentid, config):
         print('Incident name {} does not exist.'.format(incidentid))
-        print('Try creating the incident with `cfltools createincident` '+
-              'or listing existing incidents with `cfltools incidents --show.`')
+        print('Try creating the incident with `cfltools createincident` or '
+              'listing existing incidents with `cfltools incidents --show.`')
         exit(0)
     seen = cflt_utils.checkFileWasSeen(filename, config)
     GetUnique.run(filename, incidentid, seen)
@@ -112,7 +115,8 @@ def createincident(incident_name):
         # related-data (e.g., logfiles) in this directory.
         makedirs(incident_dir)
     if cflt_utils.checkIncidentNameExists(incident_name, config):
-        print("Incident identifier {} is not unique! Select a different incident name."
+        print('Incident identifier {} is not unique! Select a different '
+              'incident name.'
               .format(incident_name))
     else:
         cflt_utils.generateIncident(incident_name, config)

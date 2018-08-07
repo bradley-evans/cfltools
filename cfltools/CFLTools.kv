@@ -1,10 +1,44 @@
 #:kivy 1.10.1
 
+
+#:import Factory kivy.factory.Factory
+
+
+<BrowseForFile>:
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.size
+        pos: root.pos
+        FileChooserListView:
+            id: filechooser
+        Button:
+            text: 'Select'
+            on_release: root.load(filechooser.path, filechooser.selection)
+
+
+<ScreenLogparse>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Logparse Screen!'
+        BoxLayout:
+            orientation: 'horizontal'
+            Label:
+                text: 'Select .csv log file'
+            TextInput:
+                id: logfile_name
+                text: ''
+                multiline: False
+            Button:
+                text: 'Browse'
+                on_release: root.show_browseforfile()
+
+
 <Manager>:
     sm: screen_manager
     orientation: 'vertical'
     id: box
-    
+        
     ActionBar:
         pos_hint: {'top':1}
         ActionView:
@@ -36,9 +70,12 @@
                 text: 'Welcome to cfltools.'
         Screen:
             name: 'logparse'
-            Label:
-                text: 'Import IP Address Logs'
-            Label:
-                text: 'Use the form below to import a CSV file and perform analysis on the log.'
+            ScreenLogparse:
+                id: screen_logparse
+
+
+
+
+
 
 
