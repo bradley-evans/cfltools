@@ -42,13 +42,6 @@ class ScreenLogparse(BoxLayout):
                             size_hint=(0.7, 0.7))
         self._popup.open()
 
-    # def show_incidentiddropdown(self):
-    #     self.dropdown = IncidentListDropDown()
-    #     self.dropdown.build_menu()
-    #     self.dropdown.open(self.ids.incidentid)
-    #     self.dropdown.bind(on_select=lambda instance,
-    #                        x: setattr(self.ids.incidentid, 'text', x))
-
     def load(self, path, filename):
         if len(filename) > 1:
             # TODO: handle this exception correctly
