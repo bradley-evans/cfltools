@@ -1,7 +1,27 @@
 #:kivy 1.10.1
 
 
-#:import Factory kivy.factory.Factory
+#:from kivy.uix.dropdown import DropDown
+
+
+<IncidentListDropDown>:
+    Button:
+        id: incidentid
+        text: 'push butan'
+        on_release: incidentid_dropdown.open(self)
+    DropDown:
+        id: incidentid_dropdown
+        on_parent: self.dismiss()
+        on_select: incidentid = '{}'.format(args[1])
+        Button:
+            text: 'ID1'
+            on_release: dropdown.select('ID1')
+        Button:
+            text: 'ID2'
+            on_release: dropdown.select('ID2')
+        Button:
+            text: 'ID3'      
+            on_release: dropdown.select('ID3')  
 
 
 <BrowseForFile>:
@@ -22,18 +42,56 @@
     BoxLayout:
         orientation: 'vertical'
         Label:
-            text: 'Logparse Screen!'
+            text: 'Select a log to begin parsing.'
         BoxLayout:
             orientation: 'horizontal'
+            size_hint_max_height: 14
             Label:
                 text: 'Select .csv log file'
+                size_hint_x: .2
             TextInput:
                 id: logfile_name
+                size_hint_x: .7
                 hint_text: 'Enter file location here.'
                 multiline: False
             Button:
                 text: 'Browse'
+                size_hint_x: .1
                 on_release: root.show_browseforfile()
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_max_height: 14
+            Label:
+                text: 'Select incident identifier'
+                size_hint_x: .2
+            IncidentListDropDown:
+                size_hint_x: .7
+            Button:
+                text: 'Create new incident'
+                size_hint_x: .1
+        BoxLayout:
+            orientation: 'horizontal'
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    text: 'Perform IPWHOIS Queries'
+                Switch:
+                    id: whois_switch
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    text: 'Search for TOR Nodes'
+                Switch:
+                    id: tor_switch
+        Button:
+            id: begin_logparse_button
+            text: 'Parse Logfile'
+            on_release:
+                root.submit(root.ids.logfile_name.text,\
+                root.ids.incidentid.text,\
+                root.ids.whois_switch.active,\
+                root.ids.tor_switch.active)
+
 
 
 <Manager>:
