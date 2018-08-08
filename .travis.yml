@@ -11,6 +11,7 @@ install:
     - pip install tox-travis
     - pip install coverage
     - pip install -r requirements
+    - pip install kivy
 before_script:
     - pip install python-coveralls
 script:

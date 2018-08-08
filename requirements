@@ -6,4 +6,3 @@ appdirs
 dateparser
 requests
 cython
-kivy==1.10.1
