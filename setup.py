@@ -13,7 +13,7 @@ setup(
             'appdirs',
             'dateparser',
             'requests',
-            'kivy'
+            'kivy==1.10.1'
             ],
         entry_points={
             'console_scripts': [

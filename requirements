@@ -5,4 +5,5 @@ netaddr
 appdirs
 dateparser
 requests
-kivy
+cython
+kivy==1.10.1

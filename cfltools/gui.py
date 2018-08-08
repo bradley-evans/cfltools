@@ -16,17 +16,6 @@ from kivy.uix.popup import Popup
 from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
 
-# class ScreenStart(Screen):
-#     pass
-
-
-# class ScreenLogparse(Screen):
-#     pass
-
-
-# class MainMenu(FloatLayout):
-#     manager = ObjectProperty(None)
-
 
 class IncidentListSpinner(Spinner):
 
