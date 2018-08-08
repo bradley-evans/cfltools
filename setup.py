@@ -12,7 +12,8 @@ setup(
             'netaddr',
             'appdirs',
             'dateparser',
-            'requests'
+            'requests',
+            'kivy'
             ],
         entry_points={
             'console_scripts': [

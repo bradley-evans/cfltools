@@ -13,7 +13,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
-from kivy.uix.dropdown import DropDown
+from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
 
 # class ScreenStart(Screen):
@@ -28,19 +28,12 @@ from kivy.uix.button import Button
 #     manager = ObjectProperty(None)
 
 
-class IncidentListDropDown(DropDown):
-    pass
-    # def get_incidents(self):
-    #     # TODO: implement this
-    #     incidents = ['fillerincident1', 'fillerincident2', 'fillerincident3']
-    #     return incidents
+class IncidentListSpinner(Spinner):
 
-    # def build_menu(self):
-    #     self.incidents = self.get_incidents()
-    #     for incident in self.incidents:
-    #         button = Button(text=incident, height=20)
-    #         self.add_widget(button)
-    #     print('hi from build()')
+    def get_incidents(self):
+        # TODO: implement this
+        incidents = ['fillerincident1', 'fillerincident2', 'fillerincident3']
+        return incidents
 
 
 class BrowseForFile(FloatLayout):
@@ -50,7 +43,6 @@ class BrowseForFile(FloatLayout):
 
 class ScreenLogparse(BoxLayout):
     logfile = ''  # The logfile we want to examine.
-    dropdown = IncidentListDropDown()
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -111,3 +103,7 @@ class CFLToolsApp(App):
 def gui():
     print('In gui().')
     CFLToolsApp().run()
+
+
+if __name__ == "__main__":
+    gui()

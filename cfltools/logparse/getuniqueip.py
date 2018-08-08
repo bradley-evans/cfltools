@@ -244,9 +244,9 @@ def getTimerange(filename, unique_ip_address):
         for entry in logfile_reader:
             if ip.ip == entry[ip_column]:
                 entry_time = dateparser.parse(entry[time_column],
-                             settings={'TIMEZONE': 'UTC',
-                                       'RETURN_AS_TIMEZONE_AWARE': True
-                                       }).timestamp()
+                                              settings={'TIMEZONE': 'UTC',
+                                              'RETURN_AS_TIMEZONE_AWARE': True
+                                                        }).timestamp()
                 if ip.startTime > entry_time:
                     ip.startTime = entry_time
                 if ip.endTime < entry_time:
@@ -264,8 +264,10 @@ def run(filename, incident_id, seen):
     if not seen:
         import sqlite3
         db_connection = sqlite3.connect(config['USER']['db_loc'])
-        print('Adding to database located at {}...'.format(config['USER']['db_loc']))
-        sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id, db_connection)
+        print('Adding to database located at {}...'
+              .format(config['USER']['db_loc']))
+        sendUniqueToDatabase(unique_ip_address, APPFOLDER, incident_id,
+                             db_connection)
         db_connection.close()
     else:
         print('File was already added to database. Skipping database export.')

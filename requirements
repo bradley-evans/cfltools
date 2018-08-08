@@ -5,3 +5,4 @@ netaddr
 appdirs
 dateparser
 requests
+kivy

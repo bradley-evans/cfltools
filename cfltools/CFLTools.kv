@@ -1,27 +1,8 @@
 #:kivy 1.10.1
 
 
-#:from kivy.uix.dropdown import DropDown
-
-
-<IncidentListDropDown>:
-    Button:
-        id: incidentid
-        text: 'push butan'
-        on_release: incidentid_dropdown.open(self)
-    DropDown:
-        id: incidentid_dropdown
-        on_parent: self.dismiss()
-        on_select: incidentid = '{}'.format(args[1])
-        Button:
-            text: 'ID1'
-            on_release: dropdown.select('ID1')
-        Button:
-            text: 'ID2'
-            on_release: dropdown.select('ID2')
-        Button:
-            text: 'ID3'      
-            on_release: dropdown.select('ID3')  
+<IncidentListSpinner>:
+    values: self.get_incidents()
 
 
 <BrowseForFile>:
@@ -64,7 +45,8 @@
             Label:
                 text: 'Select incident identifier'
                 size_hint_x: .2
-            IncidentListDropDown:
+            IncidentListSpinner:
+                id: incidentid
                 size_hint_x: .7
             Button:
                 text: 'Create new incident'
