@@ -52,3 +52,10 @@ def dummy_config():
     config = configparser.ConfigParser()
     config.read_string(configstring)
     yield config
+
+@pytest.fixture(scope="module")
+def dummy_logfile():
+  import StringIO
+  i = 0
+  for i in 0, 100:
+    

@@ -8,6 +8,7 @@ from cfltools.settings import APPFOLDER
 
 
 class IpAddress:
+
     def __init__(self, ip, numOccurances):
         self.ip = ip
         self.numOccurances = numOccurances

@@ -117,6 +117,7 @@ def test_getTimerange():
     assert new_unique_list[1].startTime == 1517536922
     assert new_unique_list[1].endTime == 1517536940
 
+
 def test_checkExonoraTor():
     from cfltools.logparse.checkforTor import checkExonoraTor
     assert checkExonoraTor('103.28.52.93',1532174400)
@@ -128,3 +129,14 @@ def test_tor_checkIPList(dummy_db_conn, dummy_config):
     iplist = checkforTor.getIPList('test', dummy_db_conn)
     checkforTor.checkIPList(iplist, dummy_db_conn, dummy_config)
     # TODO: actually assert something here.
+
+
+"""
+New OOP Tests Begin Below
+These tests target the object-based implementations of logparse.
+"""
+
+def test_Logfile():
+    from cfltools.logparse.logfile import Logfile
+    testlogfile = Logfile('dummy.txt')
+
