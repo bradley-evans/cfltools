@@ -138,5 +138,5 @@ These tests target the object-based implementations of logparse.
 
 def test_Logfile():
     from cfltools.logparse.logfile import Logfile
-    testlogfile = Logfile('dummy.txt')
+    
 

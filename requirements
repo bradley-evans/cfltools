@@ -6,3 +6,4 @@ appdirs
 dateparser
 requests
 cython
+ipaddr

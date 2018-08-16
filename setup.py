@@ -14,6 +14,7 @@ setup(
             'dateparser',
             'requests',
             'kivy==1.10.1'
+            'ipaddr'
             ],
         entry_points={
             'console_scripts': [
