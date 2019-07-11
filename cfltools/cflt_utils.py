@@ -1,8 +1,13 @@
 # Global Variables #
 from cfltools.settings import APPFOLDER, INSTALLPATH
+from cfltools.config import log_generator
 
 
-def safeprompt(question,qtype):
+# Instantiate the logger.
+logger = log_generator(__name__)
+
+
+def safeprompt(question, qtype):
     """Some custom input validation for prompts.
     """
     valid = False
@@ -122,6 +127,6 @@ def checkforDB(config):
 def createDatabase(config):
     from shutil import copyfile
     from os import getcwd
-    print("Script current working directory is {}".format(getcwd()))
+    logger.debug("Script current working directory is {}".format(getcwd()))
     incident_db_default = INSTALLPATH + '/default/default.db'
     copyfile(incident_db_default,config['USER']['db_loc'])

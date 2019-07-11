@@ -12,7 +12,8 @@ setup(
             'netaddr',
             'appdirs',
             'dateparser',
-            'requests'
+            'requests',
+            'sqlalchemy>=1.3.5'
             ],
         entry_points={
             'console_scripts': [

@@ -1,5 +1,5 @@
 import csv  # csv reader functions
-from collections import Counter  # count uniques in a file quickly, O(nlogn)
+from collections.abc import Counter  # count uniques in a file quickly, O(nlogn)
 from decimal import Decimal  # just to show decimals with lower precision
 
 
