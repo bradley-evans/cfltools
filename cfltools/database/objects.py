@@ -8,7 +8,7 @@ from sqlalchemy import Column, ForeignKey, Integer, \
                        create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-from cfltools.config import log_generator
+from cfltools.utilities import log_generator
 
 
 # Instantiate the logger.
@@ -159,11 +159,18 @@ def makesession(db_file=None):
     If the database parameter is not given, it will create a new
     database in memory for testing.
     """
-    if db_file == None:
-        logger.warning("Instantiating an in-memory-only database for testing.")
-        db_file = 'sqlite:///:memory:'
-    engine = create_engine(db_file, echo=False)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    try:
+        if db_file is None:
+            logger.warning("Instantiating an in-memory-only database for testing.")
+            db_file = '/:memory:'
+        else:
+            from pathlib import Path
+            db_file = '/' + Path(db_file).as_posix()
+        logger.debug("Loading database: sqlite://%s", db_file)
+        engine = create_engine('sqlite://' + db_file, echo=False)
+        Base.metadata.create_all(engine)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+    except:
+        logger.critical("Failed to instantiate database sqlite://%s", db_file)
     return session

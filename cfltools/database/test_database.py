@@ -1,13 +1,28 @@
 """
 Tests for sqlalchemy database objects.
 """
+import pytest
+
+
+@pytest.fixture
+def testdatabase():
+    """
+    Generates a dummy database to test db operations.
+    Not implemented.
+    """
+    from cfltools.database import makesession
+    testdb = tmpdir / 'cfltools.db'
+    session = makesession(testdb)
+    yield session
+    # TODO: complete this fixture
+    # develop some read/write unit tests
 
 
 def test_db_ISP():
     """
     Test for ISP database object.
     """
-    from cfltools.database.objects import ISP
+    from cfltools.database import ISP
     initial = ISP(asn=10)
     assert initial.asn == 10
 
@@ -16,7 +31,7 @@ def test_db_IPAddrTest():
     """
     Test for IPAddr database object.
     """
-    from cfltools.database.objects import IPAddr
+    from cfltools.database import IPAddr
     initial = IPAddr(ipv4='8.8.8.8')
     assert initial.ipv4 == '8.8.8.8'
 
@@ -25,7 +40,7 @@ def test_db_Incident():
     """
     Test for Incident database object.
     """
-    from cfltools.database.objects import Incident
+    from cfltools.database import Incident
     initial = Incident(incident_id=1, incident_name='TestIncident',
                        folder_loc='/test/loc/', description='TestDescription')
     assert initial.incident_id == 1
@@ -36,7 +51,7 @@ def test_db_SeenFile():
     """
     Test for ISP database object.
     """
-    from cfltools.database.objects import SeenFile
+    from cfltools.database import SeenFile
     initial = SeenFile(filename='/test/loc/afile.csv')
     assert initial.filename == '/test/loc/afile.csv'
 
@@ -49,7 +64,7 @@ def test_db_basic_engine():
     but the test will remain just to check the
     basic objects.
     """
-    from cfltools.database.objects import Incident, ISP, SeenFile, IPAddr, makesession
+    from cfltools.database import Incident, ISP, SeenFile, IPAddr, makesession
 
     session = makesession()
     testincident = Incident(incident_id=1, incident_name='TestIncident',
@@ -69,5 +84,17 @@ def test_db_basic_engine():
     assert ourasn == testasn
 
 
+def test_db_make_new_session(tmpdir):
+    """
+    Test the ability to create a new session where
+    no file exists.
+    """
+    from cfltools.database import makesession
+    from os.path import exists
+    testdb = tmpdir / 'cfltools.db'
+    session = makesession(testdb)   #pylint: disable=unused-variable
+    assert exists(testdb)
+
+
 if __name__ == "__main__":
-    test_db_basic_engine()
+    pass

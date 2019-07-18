@@ -3,8 +3,7 @@ Objects for log parsing
 """
 
 
-from cfltools.config import log_generator
-from cfltools.utilities import Time
+from cfltools.utilities import Time, log_generator
 
 
 # Instantiate the logger.
@@ -244,5 +243,5 @@ class LogParser():
         """
         if str(self.filename).lower().endswith('.csv'):
             return 'csv'
-        logger.warning("File %s is not supported.", self.filename)
+        logger.error("File %s is not supported.", self.filename)
         return 'unsupported'

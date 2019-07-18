@@ -10,7 +10,12 @@ import cfltools.config as cflt_config
 
 
 # Global Variables #
-from cfltools.settings import APPFOLDER
+from cfltools.utilities import APPDIR, VERSION, log_generator
+logger = log_generator(__name__)
+
+
+from cfltools import CLISession
+session = CLISession()
 
 
 @click.group()
@@ -20,7 +25,7 @@ def cli():
     responders that aids in quickly parsing and examining server logs.
     To get help with a subcommand, use cfltools subcommand --help.
     """
-    print('cfltools version 0.0.2')
+    print('cfltools version {}'.format(VERSION))
 
 
 @cli.command()
@@ -28,70 +33,68 @@ def about():
     """
     Prints basic application information.
     """
-    # TODO: print program version here.
-    print('cfltools')
     import os
     installpath = os.path.dirname(__file__)
-    print('Install Directory: {}'.format(installpath))
+    print('Install Directory:     {}'.format(installpath))
+    print('Application Directory: {}'.format(APPDIR))
 
 
-@cli.command()
-@click.option('--purge',
-              is_flag=True,
-              help='Destroy existing database and reinitalize.',
-              confirmation_prompt=True)
-def initialize(purge):
-    """
-    Create required database and other files.
-    """
-    from pathlib import Path
-    from os import makedirs
-    import configparser
-    # If the application's user data directory doesn't
-    # exist, create it.
-    if not Path(APPFOLDER).is_dir():
-        print('Application folder {} not detected. Creating it...'.format(APPFOLDER))
-        makedirs(APPFOLDER)
-    config = configparser.ConfigParser()
-    config.read(APPFOLDER + '/cfltools.ini')
-    # If there are missing databases, create them.
-    if (not cflt_utils.checkforDB(config)) | purge:
-        if purge:
-            print('Purge flag enabled. Replacing databases with default, empty database!')
-        cflt_utils.createDatabase(config)
-    cflt_config.initialize_defaults()
+# @cli.command()
+# @click.option('--purge',
+#               is_flag=True,
+#               help='Destroy existing database and reinitalize.',
+#               confirmation_prompt=True)
+# def initialize(purge):
+#     """
+#     Create required database and other files.
+#     """
+#     from pathlib import Path
+#     from os import makedirs
+#     import configparser
+#     # If the application's user data directory doesn't
+#     # exist, create it.
+#     if not Path(APPDIR).is_dir():
+#         print('Application folder {} not detected. Creating it...'.format(APPDIR))
+#         makedirs(APPDIR)
+#     config = configparser.ConfigParser()
+#     config.read(APPDIR + '/cfltools.ini')
+#     # If there are missing databases, create them.
+#     if (not cflt_utils.checkforDB(config)) | purge:
+#         if purge:
+#             print('Purge flag enabled. Replacing databases with default, empty database!')
+#         cflt_utils.createDatabase(config)
+#     cflt_config.initialize_defaults()
 
 
 @cli.command()
 @click.argument('filename')
 @click.option('--whois', is_flag=True, help='Get WHOIS for top <INT> IPs.')
-@click.option('--incidentid', required=True)
+@click.option('--incidentid')
 @click.option('--tor', is_flag=True, help='Identify TOR exit nodes among top <INT> IPs.')
-def ip(filename, whois, incidentid, tor):  # pylint: disable=C0103
+def logparse(filename, whois, incidentid, tor):  # pylint: disable=C0103
     """
     Finds all unique IP addresses and their apperance count in FILENAME.
     The file given to this tool must be a *.csv file that contains at
     least one column of IP addresses.
     """
-    import cfltools.logparse.getuniqueip as GetUnique
-    import cfltools.logparse.getwhois as GetWhois
-    import cfltools.logparse.checkforTor as CheckTor
-    import configparser
-    config = configparser.ConfigParser()
-    config.read(APPFOLDER + '/cfltools.ini')
-    if not cflt_utils.checkIncidentNameExists(incidentid, config):
-        print('Incident name {} does not exist.'.format(incidentid))
-        print('Try creating the incident with `cfltools createincident` '+
-              'or listing existing incidents with `cfltools incidents --show.`')
-        exit(0)
-    seen = cflt_utils.checkFileWasSeen(filename, config)
-    GetUnique.run(filename, incidentid, seen)
-    if not seen:
-        cflt_utils.markFileAsSeen(filename, incidentid, config)
-    if whois:
-        GetWhois.run(incidentid)
-    if tor:
-        CheckTor.run(incidentid)
+    logger.info("Parsing log file '%s'", filename)
+    session.logparse(filename, incidentid)
+    # config = configparser.ConfigParser()
+    # config.read(APPDIR + '/cfltools.ini')
+    # if not cflt_utils.checkIncidentNameExists(incidentid, config):
+    #     print('Incident name {} does not exist.'.format(incidentid))
+    #     print('Try creating the incident with `cfltools createincident` '+
+    #           'or listing existing incidents with `cfltools incidents --show.`')
+    #     exit(0)
+    # seen = cflt_utils.checkFileWasSeen(filename, config)
+    # GetUnique.run(filename, incidentid, seen)
+    # if not seen:
+    #     cflt_utils.markFileAsSeen(filename, incidentid, config)
+    # if whois:
+    #     GetWhois.run(incidentid)
+    # if tor:
+    #     CheckTor.run(incidentid)
+
 
 
 @cli.command()
@@ -104,8 +107,8 @@ def createincident(incident_name):
     from pathlib import Path
     import configparser
     config = configparser.ConfigParser()
-    config.read(APPFOLDER + '/cfltools.ini')
-    incident_dir = APPFOLDER + '/incidents/' + incident_name
+    config.read(APPDIR + '/cfltools.ini')
+    incident_dir = APPDIR + '/incidents/' + incident_name
     if not Path(incident_dir).is_dir():
         # If a directory corresponding to a particualr incident
         # does not exist, create it. We will store our incident
@@ -127,7 +130,7 @@ def incidents(show):
     import sqlite3
     import configparser
     config = configparser.ConfigParser()
-    config.read(APPFOLDER + '/cfltools.ini')
+    config.read(APPDIR + '/cfltools.ini')
     conn = sqlite3.connect(config['USER']['db_loc'])
     if show:
         cflt_utils.listIncidents(conn)
@@ -145,7 +148,7 @@ def database(saveasn, loadasn, fillmissingasn):
     import sqlite3
     import configparser
     config = configparser.ConfigParser()
-    config.read(APPFOLDER + '/cfltools.ini')
+    config.read(APPDIR + '/cfltools.ini')
     db_connection = sqlite3.connect(config['USER']['db_loc'])
     if saveasn:
         from cfltools.logparse.getwhois import saveISPDBtoFile
@@ -174,7 +177,7 @@ def report(incident_id):
     from cfltools.cflt_utils import checkIncidentNameExists
     import configparser
     config = configparser.ConfigParser()
-    config.read(APPFOLDER + '/cfltools.ini')
+    config.read(APPDIR + '/cfltools.ini')
     if checkIncidentNameExists(incident_id, config):
         cfltools.reports.report.reportToCLI(incident_id, config)
     else:
