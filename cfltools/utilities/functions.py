@@ -19,7 +19,7 @@ def log_generator(name):
     f_handler.setLevel(logging.DEBUG)
 
     # Create formatters and add it to handlers
-    c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+    c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     c_handler.setFormatter(c_format)
     f_handler.setFormatter(f_format)
@@ -32,3 +32,16 @@ def log_generator(name):
     logger.setLevel(logging.DEBUG)
 
     return logger
+logger = log_generator(__name__)
+
+
+def asn_update(target=APPDIR):
+    """
+    Gets an updated ASN data file and returns that new
+    file's location.
+    """
+    from .pyasn import download_asn_table, convert_asn_table
+    bz2file = download_asn_table(target)
+    newfile = convert_asn_table(bz2file, target)
+    logger.info("New ASN .dat file created at %s", newfile)
+    return newfile

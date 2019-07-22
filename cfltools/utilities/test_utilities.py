@@ -2,8 +2,16 @@
 Tests for utilities
 """
 
+import pytest
 from cfltools.utilities import Config
 from cfltools.utilities import APPDIR
+
+@pytest.fixture
+def dummy_configfile(tmpdir):
+    conf_loc = tmpdir/'testconfig.ini'
+    config = Config(conf_loc)
+    yield conf_loc
+
 
 def test_config_initialize_and_read(tmpdir):
     """
@@ -32,3 +40,10 @@ def test_config_write_then_read(tmpdir):
     assert test_config.read('dead') == 'beef'
     test_config.write('foo', 'fizzbuzz')
     assert test_config.read('foo') == 'fizzbuzz'
+
+
+def test_update_asn(tmpdir):
+    from cfltools.utilities import asn_update
+    from os.path import exists
+    newfile = asn_update(tmpdir)
+    assert exists(newfile)

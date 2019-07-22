@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.fixture
-def testdatabase():
+def testdb(tmpdir):
     """
     Generates a dummy database to test db operations.
     Not implemented.
@@ -14,8 +14,6 @@ def testdatabase():
     testdb = tmpdir / 'cfltools.db'
     session = makesession(testdb)
     yield session
-    # TODO: complete this fixture
-    # develop some read/write unit tests
 
 
 def test_db_ISP():

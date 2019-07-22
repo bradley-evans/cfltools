@@ -9,3 +9,4 @@ from .globals import APPDIR
 from .globals import UTILDIR
 
 from .functions import log_generator
+from .functions import asn_update

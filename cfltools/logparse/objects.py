@@ -2,8 +2,8 @@
 Objects for log parsing
 """
 
-
-from cfltools.utilities import Time, log_generator
+from pyasn import pyasn
+from cfltools.utilities import Time, Config, log_generator, APPDIR
 
 
 # Instantiate the logger.
@@ -33,6 +33,13 @@ class IPAddress():
             self.earliest = newtime
         if newtime.posix() > self.latest.posix():
             self.latest = newtime
+
+    def asn(self, asndb):
+        """
+        Returns the ASN of the IP address.
+        Feed this method a precompiled ASN database (DAT file).
+        """
+        return asndb.lookup(self.ip)[0]
 
 
 class LogFile():
@@ -67,7 +74,6 @@ class LogFile():
         self.errors = []
         self.unique = {}
 
-
     def md5(self):
         """
         Get the MD5 checksum of the log file.
@@ -79,7 +85,7 @@ class LogFile():
 
 
 class CSVLogFile(LogFile):
-
+    """Logfile object for CSV files."""
     def __init__(self, filename):
         LogFile.__init__(self, filename)
         self._import()
@@ -232,6 +238,7 @@ class LogParser():
             raise NotImplementedError
         else:
             raise NotImplementedError
+        self.config = Config()
 
     def filetype(self):
         """

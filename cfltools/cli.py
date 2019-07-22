@@ -5,16 +5,13 @@ Command line interface for cfltools.
 
 from __future__ import print_function
 import click
-import cfltools.cflt_utils as cflt_utils  # pylint: disable=C0414
-import cfltools.config as cflt_config
 
 
 # Global Variables #
 from cfltools.utilities import APPDIR, VERSION, log_generator
-logger = log_generator(__name__)
-
-
 from cfltools import CLISession
+
+logger = log_generator(__name__)
 session = CLISession()
 
 
@@ -94,6 +91,7 @@ def logparse(filename, whois, incidentid, tor):  # pylint: disable=C0103
     #     GetWhois.run(incidentid)
     # if tor:
     #     CheckTor.run(incidentid)
+    pass
 
 
 
@@ -103,22 +101,23 @@ def createincident(incident_name):
     """
     Creates an incident to track logs associated with that event.
     """
-    from os import makedirs
-    from pathlib import Path
-    import configparser
-    config = configparser.ConfigParser()
-    config.read(APPDIR + '/cfltools.ini')
-    incident_dir = APPDIR + '/incidents/' + incident_name
-    if not Path(incident_dir).is_dir():
-        # If a directory corresponding to a particualr incident
-        # does not exist, create it. We will store our incident
-        # related-data (e.g., logfiles) in this directory.
-        makedirs(incident_dir)
-    if cflt_utils.checkIncidentNameExists(incident_name, config):
-        print("Incident identifier {} is not unique! Select a different incident name."
-              .format(incident_name))
-    else:
-        cflt_utils.generateIncident(incident_name, config)
+    # from os import makedirs
+    # from pathlib import Path
+    # import configparser
+    # config = configparser.ConfigParser()
+    # config.read(APPDIR + '/cfltools.ini')
+    # incident_dir = APPDIR + '/incidents/' + incident_name
+    # if not Path(incident_dir).is_dir():
+    #     # If a directory corresponding to a particualr incident
+    #     # does not exist, create it. We will store our incident
+    #     # related-data (e.g., logfiles) in this directory.
+    #     makedirs(incident_dir)
+    # if cflt_utils.checkIncidentNameExists(incident_name, config):
+    #     print("Incident identifier {} is not unique! Select a different incident name."
+    #           .format(incident_name))
+    # else:
+    #     cflt_utils.generateIncident(incident_name, config)
+    pass
 
 
 @cli.command()
@@ -127,14 +126,15 @@ def incidents(show):
     """
     List, modify, and remove incidents and incident identifiers.
     """
-    import sqlite3
-    import configparser
-    config = configparser.ConfigParser()
-    config.read(APPDIR + '/cfltools.ini')
-    conn = sqlite3.connect(config['USER']['db_loc'])
-    if show:
-        cflt_utils.listIncidents(conn)
-    conn.close()
+    # import sqlite3
+    # import configparser
+    # config = configparser.ConfigParser()
+    # config.read(APPDIR + '/cfltools.ini')
+    # conn = sqlite3.connect(config['USER']['db_loc'])
+    # if show:
+    #     cflt_utils.listIncidents(conn)
+    # conn.close()
+    pass
 
 
 @cli.command()
@@ -145,26 +145,27 @@ def database(saveasn, loadasn, fillmissingasn):
     """
     Database IO operations
     """
-    import sqlite3
-    import configparser
-    config = configparser.ConfigParser()
-    config.read(APPDIR + '/cfltools.ini')
-    db_connection = sqlite3.connect(config['USER']['db_loc'])
-    if saveasn:
-        from cfltools.logparse.getwhois import saveISPDBtoFile
-        from cfltools.cflt_utils import safeprompt
-        filename = safeprompt('Enter filename to save ASN database to: ',
-                              'csv')
-        saveISPDBtoFile(filename, db_connection)
-    if loadasn:
-        from cfltools.logparse.getwhois import loadISPDBfromFile
-        from cfltools.cflt_utils import safeprompt
-        filename = safeprompt('Enter filename to load ASN database from: ',
-                              'csv')
-        loadISPDBfromFile(filename, db_connection)
-    if fillmissingasn:
-        from cfltools.logparse.getwhois import getMissingASNfromUser
-        getMissingASNfromUser(db_connection)
+    # import sqlite3
+    # import configparser
+    # config = configparser.ConfigParser()
+    # config.read(APPDIR + '/cfltools.ini')
+    # db_connection = sqlite3.connect(config['USER']['db_loc'])
+    # if saveasn:
+    #     from cfltools.logparse.getwhois import saveISPDBtoFile
+    #     from cfltools.cflt_utils import safeprompt
+    #     filename = safeprompt('Enter filename to save ASN database to: ',
+    #                           'csv')
+    #     saveISPDBtoFile(filename, db_connection)
+    # if loadasn:
+    #     from cfltools.logparse.getwhois import loadISPDBfromFile
+    #     from cfltools.cflt_utils import safeprompt
+    #     filename = safeprompt('Enter filename to load ASN database from: ',
+    #                           'csv')
+    #     loadISPDBfromFile(filename, db_connection)
+    # if fillmissingasn:
+    #     from cfltools.logparse.getwhois import getMissingASNfromUser
+    #     getMissingASNfromUser(db_connection)
+    pass
 
 
 @cli.command()
@@ -173,14 +174,15 @@ def report(incident_id):
     """
     Command line / text reports related to incidents.
     """
-    import cfltools.reports.report
-    from cfltools.cflt_utils import checkIncidentNameExists
-    import configparser
-    config = configparser.ConfigParser()
-    config.read(APPDIR + '/cfltools.ini')
-    if checkIncidentNameExists(incident_id, config):
-        cfltools.reports.report.reportToCLI(incident_id, config)
-    else:
-        print('Incident {} does not exist. You can '
-              'show a list of incidents with the command '
-              'cfltools incidents --show'.format(incident_id))
+    # import cfltools.reports.report
+    # from cfltools.cflt_utils import checkIncidentNameExists
+    # import configparser
+    # config = configparser.ConfigParser()
+    # config.read(APPDIR + '/cfltools.ini')
+    # if checkIncidentNameExists(incident_id, config):
+    #     cfltools.reports.report.reportToCLI(incident_id, config)
+    # else:
+    #     print('Incident {} does not exist. You can '
+    #           'show a list of incidents with the command '
+    #           'cfltools incidents --show'.format(incident_id))
+    pass

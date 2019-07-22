@@ -8,6 +8,7 @@ from random import randint
 from datetime import datetime
 import pytest
 from cfltools.logparse import LogParser, IPAddress
+from cfltools.utilities.test_utilities import dummy_configfile
 
 
 LOGSIZE = 10
@@ -120,6 +121,17 @@ def logfile(tmpdir, iplogline):
     yield testfile
 
 
+@pytest.fixture
+def dummy_asndb(tmpdir):
+    """
+    Generates a dummy ASNDB for IP resolution testing.
+    """
+    from cfltools.utilities import asn_update
+    from pyasn import pyasn
+    asn_datfile = asn_update(tmpdir)
+    yield pyasn(asn_datfile)
+
+
 def test_open_file_and_checksum(logfile):
     """
     Verifies that a file can be opened and checksummed
@@ -204,8 +216,15 @@ def test_ipaddress_timestampconversion():
     assert ipaddr.latest.posix() == 4000 # corresponds to times[3]
 
 
+def test_ipaddress_getasn(dummy_asndb):
+    ipaddr = IPAddress('1.1.1.1', 'Wed Dec 31 16:25:00 2013')
+    assert ipaddr.asn(dummy_asndb) == dummy_asndb.lookup('1.1.1.1')[0]
+
 #TODO: unit test to check if earliest / latest times are good
 #TODO: unit test to check if time stamp conversion from various formats are good
+
+
+
 
 if __name__ == '__main__':
     pass
