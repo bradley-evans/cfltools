@@ -129,7 +129,7 @@ def dummy_asndb(tmpdir):
     from cfltools.utilities import asn_update
     from pyasn import pyasn
     asn_datfile = asn_update(tmpdir)
-    yield pyasn(asn_datfile)
+    yield pyasn(str(asn_datfile))
 
 
 def test_open_file_and_checksum(logfile):

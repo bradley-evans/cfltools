@@ -58,6 +58,6 @@ def asn_update(target=APPDIR):
         logger.warning("Could not download ASN database.")
         logger.warning("Instantiating a default DAT file. This may be very out of date!")
         copyfile(UTILDIR/'default.dat', APPDIR/'default.dat')
-        newfile = APPDIR/'default.dat'
+        newfile = str(APPDIR/'default.dat')
     logger.info("New ASN .dat file created at %s", newfile)
     return newfile

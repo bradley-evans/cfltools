@@ -99,6 +99,8 @@ class Config():
         Does not return.
         """
         # parser.read(self.configfile)
+        if type(newvalue) is not str:
+            newvalue = str(newvalue)
         self.parser['USER'][attr] = newvalue
         with open(self.configfile, 'a') as file:
             self.parser.write(file)
