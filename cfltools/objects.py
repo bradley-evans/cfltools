@@ -9,7 +9,7 @@ from cfltools.logparse import LogParser
 from datetime import date
 
 
-logger = log_generator(__name__).setLevel(logging.INFO)
+logger = log_generator(__name__)
 
 
 class Session():

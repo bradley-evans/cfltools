@@ -45,23 +45,35 @@ class Time():
 class Config():
 
     def __init__(self, configfile_loc=APPDIR/'cfltools.ini'):
+        logger.debug("Creating a Config() object, using %s", configfile_loc)
         self.parser = ConfigParser()
         self.configfile = configfile_loc
+        if not exists(configfile_loc):
+            f = open(configfile_loc, 'w')
+            f.close()
         self.parser.read(self.configfile)
         default_appfolder = APPDIR
         default_database = APPDIR / 'cfltools.db'
-        if 'DEFAULT' not in self.parser:
+        if not self.parser.has_section("DEFAULT"):
             logger.debug("Writing defaults to configfile %s", self.configfile)
-            self.parser['DEFAULT'] = {'appfolder': default_appfolder.as_posix(),
-                                      'db_loc': default_database.as_posix(),
-                                      'max_tor_requests': '100',
-                                      'max_whois_requests': '100'
-                                      }
-            self.parser.write(file)
-        if 'USER' not in self.parser:
-            self.parser['USER'] = {}
-            with open(self.configfile, 'a') as file:
-                self.parser.write(file)
+            self.parser.set("DEFAULT","appfolder",default_appfolder.as_posix())
+            self.parser.set("DEFAULT","db_loc",default_database.as_posix())
+            self.parser.set("DEFAULT","max_tor_requests","100")
+            self.parser.set("DEFAULT","max_whois_requests","100")
+            self.parser.write(open(configfile_loc,'w'))
+            # self.parser['DEFAULT'] = {'appfolder': default_appfolder.as_posix(),
+            #                           'db_loc': default_database.as_posix(),
+            #                           'max_tor_requests': '100',
+            #                           'max_whois_requests': '100'
+            #                           }
+            # with open(self.configfile, 'wb') as file:
+            #     self.parser.write(file)
+        if not self.parser.has_section("USER"):
+            self.parser.add_section("USER")
+            self.parser.write(open(configfile_loc,'w'))
+            # self.parser['USER'] = {}
+            # with open(self.configfile, 'wb') as file:
+            #     self.parser.write(file)
 
     def read(self, attr):
         """
