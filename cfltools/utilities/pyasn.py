@@ -126,12 +126,16 @@ def download_asn_table(target):
 
 def convert_asn_table(fn, target):
     from os import path
-    newfile = path.splitext(fn)[0] + '.dat'
-    logger.debug("Decompressing bz2 file.\n" + \
-                 "newfile loc: %s\n" + \
-                 "file being decompressed: %s", newfile, fn)
-    prefixes = mrtx.parse_mrt_file(str(fn),
-                               print_progress=True,
-                               skip_record_on_error=True)
-    mrtx.dump_prefixes_to_file(prefixes, newfile, str(fn))
+    try:
+        newfile = path.splitext(fn)[0] + '.dat'
+        logger.debug("Decompressing bz2 file.\n" + \
+                     "newfile loc: %s\n" + \
+                     "file being decompressed: %s", newfile, fn)
+        prefixes = mrtx.parse_mrt_file(str(fn),
+                                       print_progress=True,
+                                       skip_record_on_error=True)
+        mrtx.dump_prefixes_to_file(prefixes, newfile, str(fn))
+    except:
+        logger.warning("Could not download ASN database.")
+        logger.warning("Instantiating a default DAT file. This may be very out of date!")
     return newfile

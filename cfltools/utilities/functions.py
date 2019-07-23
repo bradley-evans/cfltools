@@ -49,7 +49,15 @@ def asn_update(target=APPDIR):
     file's location.
     """
     from .pyasn import download_asn_table, convert_asn_table
-    bz2file = download_asn_table(target)
-    newfile = convert_asn_table(bz2file, target)
+    try:
+        bz2file = download_asn_table(target)
+        newfile = convert_asn_table(bz2file, target)
+    except:
+        from .globals import UTILDIR
+        from shutil import copyfile
+        logger.warning("Could not download ASN database.")
+        logger.warning("Instantiating a default DAT file. This may be very out of date!")
+        copyfile(UTILDIR/'default.dat', APPDIR/'default.dat')
+        newfile = APPDIR/'default.dat'
     logger.info("New ASN .dat file created at %s", newfile)
     return newfile
