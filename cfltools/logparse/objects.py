@@ -2,12 +2,15 @@
 Objects for log parsing
 """
 
+import pdb
 from pyasn import pyasn
-from cfltools.utilities import Time, Config, log_generator, APPDIR
+from datetime import date
+from cfltools.utilities import Time, Config, log_generator, asn_update
 
 
 # Instantiate the logger.
 logger = log_generator(__name__)
+config = Config()
 
 
 class IPAddress():
@@ -21,6 +24,7 @@ class IPAddress():
         self.earliest = Time(raw_timestamp)
         self.latest = self.earliest
         self.occurances = 1
+        self.asn = None
 
     def update_time(self, raw_timestamp):
         """
@@ -34,12 +38,18 @@ class IPAddress():
         if newtime.posix() > self.latest.posix():
             self.latest = newtime
 
-    def asn(self, asndb):
+    def get_asn(self, asndb):
         """
         Returns the ASN of the IP address.
         Feed this method a precompiled ASN database (DAT file).
         """
-        return asndb.lookup(self.ip)[0]
+        if self.asn is None:
+            self.asn = asndb.lookup(self.ip)[0]
+        return self.asn
+
+    def values(self):
+        """Returns a dict of the values in this IP object."""
+        return {'IP':self.ip, 'ASN':self.asn}
 
 
 class LogFile():
@@ -66,6 +76,17 @@ class LogFile():
                 self.unique[ip].update_time(timestamp)
             else:
                 self.unique[ip] = IPAddress(ip, timestamp)
+        asndb = self.get_asndb()
+        errors = []
+        for entry in self.unique.values():
+            try:
+                entry.asn = entry.get_asn(asndb)
+            except ValueError:
+                logger.warning("Could not find ASN for IP [%s] due to ValueError. " + \
+                               "This may be because it is the header row of a logfile.", entry.ip)
+                errors.append(entry.ip)
+        for badip in errors:
+            del self.unique[badip]
 
     def __init__(self, filename):
         logger.debug("Importing %s.", filename)
@@ -82,6 +103,15 @@ class LogFile():
         with open(self.filename) as file:
             data = file.read()
         return md5(data.encode('utf-8')).hexdigest()
+
+    def get_asndb(self):
+        """Get an ASN database"""
+        if config.read("asn_datfile") is None:
+            logger.warning("No ASN data file detected! Creating one...")
+            config.write("asn_datfile", asn_update())
+            config.write("asn_lastupdate", date.today().strftime("%Y-%m-%d"))
+        asndb = pyasn(config.read("asn_datfile"))
+        return asndb
 
 
 class CSVLogFile(LogFile):
@@ -238,7 +268,6 @@ class LogParser():
             raise NotImplementedError
         else:
             raise NotImplementedError
-        self.config = Config()
 
     def filetype(self):
         """
@@ -252,3 +281,7 @@ class LogParser():
             return 'csv'
         logger.error("File %s is not supported.", self.filename)
         return 'unsupported'
+
+    def unique(self):
+        """Return an array of unique IPs in a file"""
+        return self.logfile.unique

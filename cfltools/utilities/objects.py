@@ -47,18 +47,20 @@ class Config():
     def __init__(self, configfile_loc=APPDIR/'cfltools.ini'):
         self.parser = ConfigParser()
         self.configfile = configfile_loc
+        self.parser.read(self.configfile)
         default_appfolder = APPDIR
         default_database = APPDIR / 'cfltools.db'
-        self.parser['DEFAULT'] = {'appfolder': default_appfolder.as_posix(),
-                                  'db_loc': default_database.as_posix(),
-                                  'max_tor_requests': '100',
-                                  'max_whois_requests': '100'
-                                  }
-        with open(self.configfile, 'w') as file:
+        if 'DEFAULT' not in self.parser:
+            logger.debug("Writing defaults to configfile %s", self.configfile)
+            self.parser['DEFAULT'] = {'appfolder': default_appfolder.as_posix(),
+                                      'db_loc': default_database.as_posix(),
+                                      'max_tor_requests': '100',
+                                      'max_whois_requests': '100'
+                                      }
             self.parser.write(file)
         if 'USER' not in self.parser:
             self.parser['USER'] = {}
-            with open(self.configfile, 'w') as file:
+            with open(self.configfile, 'a') as file:
                 self.parser.write(file)
 
     def read(self, attr):
@@ -86,6 +88,6 @@ class Config():
         """
         # parser.read(self.configfile)
         self.parser['USER'][attr] = newvalue
-        with open(self.configfile, 'w') as file:
+        with open(self.configfile, 'a') as file:
             self.parser.write(file)
         logger.info("Changed %s to %s", attr, newvalue)

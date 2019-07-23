@@ -217,8 +217,9 @@ def test_ipaddress_timestampconversion():
 
 
 def test_ipaddress_getasn(dummy_asndb):
+    """Test IPAddress() asn lookup method"""
     ipaddr = IPAddress('1.1.1.1', 'Wed Dec 31 16:25:00 2013')
-    assert ipaddr.asn(dummy_asndb) == dummy_asndb.lookup('1.1.1.1')[0]
+    assert ipaddr.get_asn(dummy_asndb) == dummy_asndb.lookup('1.1.1.1')[0]
 
 #TODO: unit test to check if earliest / latest times are good
 #TODO: unit test to check if time stamp conversion from various formats are good
