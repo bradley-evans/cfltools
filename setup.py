@@ -14,6 +14,7 @@ setup(
             'dateparser',
             'requests',
             'sqlalchemy>=1.3.5'
+            'pyasn'
             ],
         entry_points={
             'console_scripts': [

@@ -2,6 +2,7 @@
 CFLTools general helper functions
 """
 import logging
+from os.path import exists
 from .globals import APPDIR
 
 
@@ -9,6 +10,10 @@ def log_generator(name):
     """
     Log handler for cfltools
     """
+
+    if not exists(APPDIR/'cfltools.log'):
+        with open(APPDIR/'cfltools.log', 'w+') as logfile:
+            logfile.write("CFLTools Event Log\n")
 
     logger = logging.getLogger('cfltools | ' + name)
 
