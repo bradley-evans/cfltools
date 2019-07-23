@@ -204,10 +204,10 @@ def test_csvfile_findunique(logfile_unprocessed):
 
 def test_ipaddress_timestampconversion():
     times = [
-        'Thursday, January 1, 1970 12:16:40 AM',
-        'Thursday, January 1, 1970 12:33:20 AM',
-        'Thursday, January 1, 1970 12:50:00 AM',
-        'Thursday, January 1, 1970 1:06:40 AM'
+        'Thursday, January 1, 1970 12:16:40 AM UTC',
+        'Thursday, January 1, 1970 12:33:20 AM UTC',
+        'Thursday, January 1, 1970 12:50:00 AM UTC',
+        'Thursday, January 1, 1970 1:06:40 AM UTC'
         ]
     ipaddr = IPAddress('0.0.0.0', 'Wed Dec 31 16:25:00 1969')
     for time in times:
