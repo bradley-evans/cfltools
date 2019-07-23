@@ -32,13 +32,15 @@ class Time():
     def posix(self):
         """Returns time as POSIX time (integer)"""
         return parse(self.raw_time,
-                     settings={'RETURN_AS_TIMEZONE_AWARE': True
+                     settings={'TIMEZONE': 'UTC',
+                               'RETURN_AS_TIMEZONE_AWARE': True,
                                }).timestamp()
 
     def iso(self):
         """Returns an ISO formatted date time group"""
         return parse(self.raw_time,
-                     settings={'RETURN_AS_TIMEZONE_AWARE': True
+                     settings={'TIMEZONE': 'UTC',
+                               'RETURN_AS_TIMEZONE_AWARE': True
                                }).isoformat()
 
 

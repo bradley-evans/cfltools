@@ -3,8 +3,8 @@ Tests for utilities
 """
 
 import pytest
-from cfltools.utilities import Config
-from cfltools.utilities import APPDIR
+from cfltools.utilities import Config, Time, APPDIR
+
 
 @pytest.fixture
 def dummy_configfile(tmpdir):
@@ -47,3 +47,8 @@ def test_update_asn(tmpdir):
     from os.path import exists
     newfile = asn_update(tmpdir)
     assert exists(newfile)
+
+def test_time():
+    time = Time("Friday, January 2, 1970 3:46:40 AM")
+    assert time.posix() == 100000
+
