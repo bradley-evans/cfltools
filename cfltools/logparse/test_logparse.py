@@ -209,7 +209,7 @@ def test_ipaddress_timestampconversion():
         'Thursday, January 1, 1970 12:50:00 AM UTC',
         'Thursday, January 1, 1970 1:06:40 AM UTC'
         ]
-    ipaddr = IPAddress('0.0.0.0', 'Wed Dec 31 16:25:00 1969')
+    ipaddr = IPAddress('0.0.0.0', 'Thursday, January 1, 1970 12:25:00 am UTC')
     for time in times:
         ipaddr.update_time(time)
     assert ipaddr.earliest.posix() == 1000 # corresponds to times[0]
