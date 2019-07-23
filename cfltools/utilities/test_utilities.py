@@ -41,6 +41,16 @@ def test_config_write_then_read(tmpdir):
     test_config.write('foo', 'fizzbuzz')
     assert test_config.read('foo') == 'fizzbuzz'
 
+def test_multiple_config_open(tmpdir):
+    config1 = Config(tmpdir/'testconfig.ini')
+    assert config1.read('appfolder') == APPDIR.as_posix()
+    config1 = Config(tmpdir/'testconfig.ini')
+    assert config1.read('appfolder') == APPDIR.as_posix()
+    config2 = Config(tmpdir/'testconfig.ini')
+    assert config2.read('appfolder') == APPDIR.as_posix()
+    config1.write('appfolder', 'beepboop')
+    assert config2.read('appfolder') == 'beepboop'
+
 
 def test_update_asn(tmpdir):
     from cfltools.utilities import asn_update

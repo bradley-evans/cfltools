@@ -45,51 +45,47 @@ class Time():
 
 
 class Config():
-
+    """Configuration file object."""
     def __init__(self, configfile_loc=APPDIR/'cfltools.ini'):
         logger.debug("Creating a Config() object, using %s", configfile_loc)
-        self.parser = ConfigParser()
+        parser = ConfigParser()
         self.configfile = configfile_loc
         if not exists(configfile_loc):
             f = open(configfile_loc, 'w')
             f.close()
-        self.parser.read(self.configfile)
+        parser.read(self.configfile)
         default_appfolder = APPDIR
         default_database = APPDIR / 'cfltools.db'
-        if not self.parser.has_section("DEFAULT"):
+        if not parser.has_option("DEFAULT", "appfolder"):
             logger.debug("Writing defaults to configfile %s", self.configfile)
-            self.parser.set("DEFAULT","appfolder",default_appfolder.as_posix())
-            self.parser.set("DEFAULT","db_loc",default_database.as_posix())
-            self.parser.set("DEFAULT","max_tor_requests","100")
-            self.parser.set("DEFAULT","max_whois_requests","100")
-            self.parser.write(open(configfile_loc,'w'))
-            # self.parser['DEFAULT'] = {'appfolder': default_appfolder.as_posix(),
-            #                           'db_loc': default_database.as_posix(),
-            #                           'max_tor_requests': '100',
-            #                           'max_whois_requests': '100'
-            #                           }
-            # with open(self.configfile, 'wb') as file:
-            #     self.parser.write(file)
-        if not self.parser.has_section("USER"):
-            self.parser.add_section("USER")
-            self.parser.write(open(configfile_loc,'w'))
-            # self.parser['USER'] = {}
-            # with open(self.configfile, 'wb') as file:
-            #     self.parser.write(file)
+            parser.set("DEFAULT", "appfolder", default_appfolder.as_posix())
+            parser.set("DEFAULT", "db_loc", default_database.as_posix())
+            parser.set("DEFAULT", "max_tor_requests", "100")
+            parser.set("DEFAULT", "max_whois_requests", "100")
+            parser.write(open(configfile_loc, 'w'))
+        if not parser.has_section("USER"):
+            parser.add_section("USER")
+            parser.write(open(configfile_loc, 'w'))
+        del parser
 
     def read(self, attr):
         """
         Reader for configuration files.
         Returns value of the setting.
         """
-        # self.parser.read(self.configfile)
-        if attr in self.parser['USER']:
+        parser = ConfigParser()
+        parser.read(self.configfile)
+        if attr in parser['USER']:
+            val = str(parser['USER'][attr])
+            del parser
             # If there is a user setting for the attribute, we
             # prefer to return that value.
-            return str(self.parser['USER'][attr])
-        if attr in self.parser['DEFAULT']:
+            return val
+        if attr in parser['DEFAULT']:
+            val = str(parser['DEFAULT'][attr])
+            del parser
             # Otherwise, return the default value.
-            return str(self.parser['DEFAULT'][attr])
+            return val
         # If the value doesn't exist, return None and
         # handle the error in the calling function.
         logger.warning("Setting %s not found in %s!", attr, self.configfile)
@@ -100,10 +96,13 @@ class Config():
         Writer for configuration files.
         Does not return.
         """
-        # parser.read(self.configfile)
+        parser = ConfigParser()
+        parser.read(self.configfile)
         if type(newvalue) is not str:
             newvalue = str(newvalue)
-        self.parser['USER'][attr] = newvalue
-        with open(self.configfile, 'a') as file:
-            self.parser.write(file)
+        parser['USER'][attr] = newvalue
+        with open(self.configfile, 'w') as file:
+            parser.write(file)
+            file.close()
         logger.info("Changed %s to %s", attr, newvalue)
+        del parser
